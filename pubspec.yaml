@@ -1,0 +1,39 @@
+name: gopher_flutter_client
+description: A cross-platform Gopher protocol client built with Flutter
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.6
+
+  # State management
+  provider: ^6.1.1
+
+  # Storage
+  shared_preferences: ^2.2.2
+
+  # URL parsing
+  url_launcher: ^6.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+
+  # assets:
+  #   - images/
+
+  # fonts:
+  #   - family: Courier
+  #     fonts:
+  #       - asset: fonts/Courier.ttf
