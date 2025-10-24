@@ -33,10 +33,11 @@ class GopherClient {
       await socket.flush();
 
       // Read the response
-      final response = await socket
-          .timeout(_timeout)
-          .transform(utf8.decoder)
-          .join();
+      final chunks = <int>[];
+      await for (var chunk in socket.timeout(_timeout)) {
+        chunks.addAll(chunk);
+      }
+      final response = utf8.decode(chunks);
 
       return response;
     } on SocketException catch (e) {

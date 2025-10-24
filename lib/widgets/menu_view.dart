@@ -65,8 +65,8 @@ class _MenuItemTile extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             )
           : null,
-      trailing: item.isNavigable ? const Icon(Icons.chevron_right) : null,
-      onTap: item.isNavigable
+      trailing: item.type.isNavigable ? const Icon(Icons.chevron_right) : null,
+      onTap: item.type.isNavigable
           ? () {
               if (item.type == GopherItemType.search) {
                 _showSearchDialog(context, item);

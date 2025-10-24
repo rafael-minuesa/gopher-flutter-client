@@ -2,6 +2,14 @@
 
 A modern, cross-platform Gopher protocol client built with Flutter.
 
+[![Deploy to GitHub Pages](https://github.com/rafael-minuesa/gopher-flutter-client/actions/workflows/deploy-web.yml/badge.svg)](https://github.com/rafael-minuesa/gopher-flutter-client/actions/workflows/deploy-web.yml)
+
+## 🚀 Try It Now
+
+- **Web App**: [https://rafael-minuesa.github.io/gopher-flutter-client/](https://rafael-minuesa.github.io/gopher-flutter-client/)
+- **Download for Android**: Check [Releases](https://github.com/rafael-minuesa/gopher-flutter-client/releases)
+- **Desktop Apps**: Available in [Releases](https://github.com/rafael-minuesa/gopher-flutter-client/releases)
+
 ## Features
 
 - **Full Gopher Protocol Support**: Browse Gopher servers with support for directories, text files, search servers, and more
@@ -118,6 +126,32 @@ flutter build windows --release
 flutter build macos --release
 flutter build linux --release
 ```
+
+## 🌐 Deployment
+
+### Automatic Web Deployment
+
+This repository includes a GitHub Actions workflow that automatically builds and deploys the web version to GitHub Pages whenever you push to the main branch.
+
+**To enable automatic deployment:**
+
+1. Go to your repository Settings → Pages
+2. Set Source to "Deploy from a branch"
+3. Select branch: `gh-pages` and folder: `/ (root)`
+4. Save
+
+The workflow will:
+- Build the Flutter web app
+- Deploy to GitHub Pages
+- Make it available at: `https://yourusername.github.io/gopher-flutter-client/`
+
+### Manual Deployment
+
+See [DISTRIBUTION.md](DISTRIBUTION.md) for detailed instructions on:
+- Building APKs for Android
+- Creating GitHub Releases
+- Deploying to various platforms
+- Submitting to app stores
 
 ## Contributing
 
