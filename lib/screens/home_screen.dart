@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
@@ -166,6 +167,29 @@ class BrowserTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Web platform warning banner
+        if (kIsWeb)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            color: Colors.orange.shade100,
+            child: Row(
+              children: [
+                Icon(Icons.warning, color: Colors.orange.shade900),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Web browsers cannot connect to Gopher servers directly. '
+                    'Please download the desktop or mobile version for full functionality.',
+                    style: TextStyle(
+                      color: Colors.orange.shade900,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         const AddressBar(),
         Expanded(
           child: Consumer<AppState>(
@@ -219,34 +243,79 @@ class BrowserTab extends StatelessWidget {
               }
 
               return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.public,
-                      size: 64,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Welcome to Gopher',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Enter a gopher:// URL above to start browsing',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Example servers:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    _ExampleLink('gopher://gopher.floodgap.com'),
-                    _ExampleLink('gopher://gopher.quux.org'),
-                    _ExampleLink('gopher://gopherpedia.com'),
-                  ],
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.public,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Welcome to Gopher',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      if (kIsWeb) ...[
+                        const Text(
+                          'This is a demo of the Gopher client interface.',
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.download,
+                                size: 48,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Download the Full App',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'To browse Gopher servers, download the desktop or mobile version:',
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+                              FilledButton.icon(
+                                onPressed: () {
+                                  // Open releases page
+                                },
+                                icon: const Icon(Icons.open_in_new),
+                                label: const Text('View Releases'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else ...[
+                        const Text(
+                          'Enter a gopher:// URL above to start browsing',
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Example servers:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        _ExampleLink('gopher://gopher.floodgap.com'),
+                        _ExampleLink('gopher://gopher.quux.org'),
+                        _ExampleLink('gopher://gopherpedia.com'),
+                      ],
+                    ],
+                  ),
                 ),
               );
             },
