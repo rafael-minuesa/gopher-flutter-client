@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/app_state.dart';
 import '../widgets/address_bar.dart';
 import '../widgets/menu_view.dart';
@@ -458,18 +459,19 @@ class _DownloadButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OutlinedButton.icon(
-      onPressed: () {
-        // In a real app, would use url_launcher
-        // For now, just show a message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Visit GitHub releases to download $label version'),
-            action: SnackBarAction(
-              label: 'OK',
-              onPressed: () {},
-            ),
-          ),
-        );
+      onPressed: () async {
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Could not open $url'),
+              ),
+            );
+          }
+        }
       },
       icon: Icon(icon),
       label: Text(label),
