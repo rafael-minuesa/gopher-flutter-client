@@ -6,16 +6,32 @@ A modern, cross-platform Gopher protocol client built with Flutter.
 
 ## 🚀 Try It Now
 
-- **Web App**: [https://rafael-minuesa.github.io/gopher-flutter-client/](https://rafael-minuesa.github.io/gopher-flutter-client/)
-- **Download for Android**: Check [Releases](https://github.com/rafael-minuesa/gopher-flutter-client/releases)
-- **Desktop Apps**: Available in [Releases](https://github.com/rafael-minuesa/gopher-flutter-client/releases)
+- **Web Demo**: [https://rafael-minuesa.github.io/gopher-flutter-client/](https://rafael-minuesa.github.io/gopher-flutter-client/) *(UI preview only - see note below)*
+- **📱 Android APK**: [Download Latest Release](https://github.com/rafael-minuesa/gopher-flutter-client/releases/latest)
+- **💻 Windows**: [Download Latest Release](https://github.com/rafael-minuesa/gopher-flutter-client/releases/latest)
+- **🍎 macOS**: [Download Latest Release](https://github.com/rafael-minuesa/gopher-flutter-client/releases/latest)
+- **🐧 Linux**: [Download Latest Release](https://github.com/rafael-minuesa/gopher-flutter-client/releases/latest)
+
+> **⚠️ Important Note About Web Version:**
+> The Gopher protocol requires raw TCP socket connections, which web browsers do not support for security reasons. The web version serves as a UI demonstration only. **To actually browse Gopher servers, please download the desktop or mobile version.**
+
+### Automated Releases
+
+This project uses GitHub Actions to automatically build releases for all platforms. Simply create a git tag to trigger a new release:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+See [RELEASES.md](RELEASES.md) for detailed release instructions.
 
 ## Features
 
-- **Full Gopher Protocol Support**: Browse Gopher servers with support for directories, text files, search servers, and more
+- **Full Gopher Protocol Support**: Browse Gopher servers with support for directories, text files, search servers, and more *(desktop/mobile only)*
 - **Modern UI**: Clean, Material Design 3 interface with dark mode support
 - **Navigation**: Back/forward buttons, history tracking, and bookmarks
-- **Cross-Platform**: Runs on Android, iOS, Web, Windows, macOS, and Linux
+- **Cross-Platform**: Runs on Android, iOS, Windows, macOS, and Linux *(web version is UI demo only)*
 - **Bookmarks**: Save your favorite Gopher sites
 - **History**: Keep track of recently visited pages
 - **Search Support**: Search-enabled Gopher servers

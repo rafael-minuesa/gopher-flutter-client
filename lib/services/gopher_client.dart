@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/gopher_item.dart';
 
 /// Exception thrown when Gopher operations fail
@@ -18,6 +19,15 @@ class GopherClient {
 
   /// Fetch content from a Gopher server
   Future<String> fetch(GopherAddress address) async {
+    // Web browsers don't support raw TCP sockets
+    if (kIsWeb) {
+      throw GopherException(
+        'The Gopher protocol requires TCP socket connections which are not '
+        'supported in web browsers for security reasons. Please use the '
+        'desktop or mobile version of this app to browse Gopher sites.'
+      );
+    }
+
     Socket? socket;
 
     try {
@@ -83,6 +93,15 @@ class GopherClient {
 
   /// Download binary content
   Future<List<int>> fetchBinary(GopherAddress address) async {
+    // Web browsers don't support raw TCP sockets
+    if (kIsWeb) {
+      throw GopherException(
+        'The Gopher protocol requires TCP socket connections which are not '
+        'supported in web browsers for security reasons. Please use the '
+        'desktop or mobile version of this app to browse Gopher sites.'
+      );
+    }
+
     Socket? socket;
 
     try {
