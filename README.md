@@ -7,11 +7,24 @@ A modern, cross-platform Gopher protocol client built with Flutter.
 ## 🚀 Try It Now
 
 - **Web Demo**: [https://rafael-minuesa.github.io/gopher-flutter-client/](https://rafael-minuesa.github.io/gopher-flutter-client/) *(UI preview only - see note below)*
-- **Download for Android**: Check [Releases](https://github.com/rafael-minuesa/gopher-flutter-client/releases)
-- **Desktop Apps**: Available in [Releases](https://github.com/rafael-minuesa/gopher-flutter-client/releases)
+- **📱 Android APK**: [Download Latest Release](https://github.com/rafael-minuesa/gopher-flutter-client/releases/latest)
+- **💻 Windows**: [Download Latest Release](https://github.com/rafael-minuesa/gopher-flutter-client/releases/latest)
+- **🍎 macOS**: [Download Latest Release](https://github.com/rafael-minuesa/gopher-flutter-client/releases/latest)
+- **🐧 Linux**: [Download Latest Release](https://github.com/rafael-minuesa/gopher-flutter-client/releases/latest)
 
 > **⚠️ Important Note About Web Version:**
 > The Gopher protocol requires raw TCP socket connections, which web browsers do not support for security reasons. The web version serves as a UI demonstration only. **To actually browse Gopher servers, please download the desktop or mobile version.**
+
+### Automated Releases
+
+This project uses GitHub Actions to automatically build releases for all platforms. Simply create a git tag to trigger a new release:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+See [RELEASES.md](RELEASES.md) for detailed release instructions.
 
 ## Features
 

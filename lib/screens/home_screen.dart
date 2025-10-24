@@ -20,6 +20,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Simplified web version - just show landing page
+    if (kIsWeb) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Gopher Client'),
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        ),
+        body: const WebLandingPage(),
+      );
+    }
+
+    // Full native version with all features
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gopher Client'),
@@ -167,29 +179,6 @@ class BrowserTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Web platform warning banner
-        if (kIsWeb)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            color: Colors.orange.shade100,
-            child: Row(
-              children: [
-                Icon(Icons.warning, color: Colors.orange.shade900),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Web browsers cannot connect to Gopher servers directly. '
-                    'Please download the desktop or mobile version for full functionality.',
-                    style: TextStyle(
-                      color: Colors.orange.shade900,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         const AddressBar(),
         Expanded(
           child: Consumer<AppState>(
@@ -243,79 +232,34 @@ class BrowserTab extends StatelessWidget {
               }
 
               return Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.public,
-                        size: 64,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Welcome to Gopher',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 8),
-                      if (kIsWeb) ...[
-                        const Text(
-                          'This is a demo of the Gopher client interface.',
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.download,
-                                size: 48,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Download the Full App',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'To browse Gopher servers, download the desktop or mobile version:',
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 12),
-                              FilledButton.icon(
-                                onPressed: () {
-                                  // Open releases page
-                                },
-                                icon: const Icon(Icons.open_in_new),
-                                label: const Text('View Releases'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ] else ...[
-                        const Text(
-                          'Enter a gopher:// URL above to start browsing',
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Example servers:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        _ExampleLink('gopher://gopher.floodgap.com'),
-                        _ExampleLink('gopher://gopher.quux.org'),
-                        _ExampleLink('gopher://gopherpedia.com'),
-                      ],
-                    ],
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.public,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Welcome to Gopher',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Enter a gopher:// URL above to start browsing',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Example servers:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    _ExampleLink('gopher://gopher.floodgap.com'),
+                    _ExampleLink('gopher://gopher.quux.org'),
+                    _ExampleLink('gopher://gopherpedia.com'),
+                  ],
                 ),
               );
             },
@@ -338,6 +282,246 @@ class _ExampleLink extends StatelessWidget {
         context.read<AppState>().navigate(url);
       },
       child: Text(url),
+    );
+  }
+}
+
+/// Web landing page - simplified UI for web platform
+class WebLandingPage extends StatelessWidget {
+  const WebLandingPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32.0),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.public,
+                size: 96,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Gopher Client',
+                style: Theme.of(context).textTheme.displaySmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'A modern, cross-platform Gopher protocol client',
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  border: Border.all(color: Colors.orange.shade300),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 48,
+                      color: Colors.orange.shade700,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Web Version Limitation',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.orange.shade900,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'The Gopher protocol requires raw TCP socket connections, '
+                      'which web browsers do not support for security reasons.',
+                      style: TextStyle(color: Colors.orange.shade900),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'To browse Gopher servers, please download the desktop or mobile version.',
+                      style: TextStyle(
+                        color: Colors.orange.shade900,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.download,
+                      size: 56,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Download Now',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _DownloadButton(
+                          icon: Icons.desktop_windows,
+                          label: 'Windows',
+                          url: 'https://github.com/rafael-minuesa/gopher-flutter-client/releases',
+                        ),
+                        _DownloadButton(
+                          icon: Icons.apple,
+                          label: 'macOS',
+                          url: 'https://github.com/rafael-minuesa/gopher-flutter-client/releases',
+                        ),
+                        _DownloadButton(
+                          icon: Icons.laptop,
+                          label: 'Linux',
+                          url: 'https://github.com/rafael-minuesa/gopher-flutter-client/releases',
+                        ),
+                        _DownloadButton(
+                          icon: Icons.android,
+                          label: 'Android',
+                          url: 'https://github.com/rafael-minuesa/gopher-flutter-client/releases',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Features',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              _FeatureItem(
+                icon: Icons.speed,
+                title: 'Fast & Lightweight',
+                description: 'Native performance on all platforms',
+              ),
+              _FeatureItem(
+                icon: Icons.bookmark,
+                title: 'Bookmarks & History',
+                description: 'Save your favorite Gopher sites',
+              ),
+              _FeatureItem(
+                icon: Icons.search,
+                title: 'Full Protocol Support',
+                description: 'Browse directories, files, and search servers',
+              ),
+              _FeatureItem(
+                icon: Icons.dark_mode,
+                title: 'Dark Mode',
+                description: 'Beautiful UI with dark mode support',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DownloadButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String url;
+
+  const _DownloadButton({
+    required this.icon,
+    required this.label,
+    required this.url,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: () {
+        // In a real app, would use url_launcher
+        // For now, just show a message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Visit GitHub releases to download $label version'),
+            action: SnackBarAction(
+              label: 'OK',
+              onPressed: () {},
+            ),
+          ),
+        );
+      },
+      icon: Icon(icon),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      ),
+    );
+  }
+}
+
+class _FeatureItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _FeatureItem({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 32,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                Text(
+                  description,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
