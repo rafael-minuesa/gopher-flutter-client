@@ -46,7 +46,7 @@ flutter run -d linux
 
 The tests use a local Gopher fixture server rather than public servers. They cover URL round trips, protocol framing, text encoding, search requests, response bounds and deadlines, cancellation, typed navigation, stale responses, persistence recovery, and the search/bookmark/wrap UI.
 
-Validated on 2026-10-08 with Flutter 3.32.7: all 32 regression tests passed, analysis and formatting checks passed, and the Linux release package built successfully. The package was installed into a temporary user data directory (including spaces and a percent sign), its desktop entry was validated, and the installed app was launched on a virtual display and fetched a text document from a local Gopher server. Public-server connectivity, CI execution, and other platforms were not tested.
+Validated on 2026-10-08 with Flutter 3.32.7: all 32 regression tests passed, analysis and formatting checks passed, and the Linux release package built successfully. The package was installed into a temporary user data directory (including spaces and a percent sign), its desktop entry was validated, and the installed app was launched on a virtual display and fetched a text document from a local Gopher server. The merged upstream web download page also builds successfully and renders at the GitHub Pages base path in a local headless browser. Public-server connectivity, CI execution, and other native platforms were not tested.
 
 The app also accepts a Gopher URL as a native command-line argument:
 
@@ -73,7 +73,7 @@ flutter build macos --release
 
 Use the appropriate host toolchain for each target. Android currently uses Flutter's generated development signing setup; configure release signing before public distribution. iOS and macOS distribution require their respective signing configuration.
 
-A browser/web build is not supported by the current direct TCP implementation. It needs a separate HTTPS/WebSocket gateway transport. The proposed HTML-to-text browser extension and optional native companion are described in [REVIEW.md](REVIEW.md); they have not been implemented in this fix.
+The web target preserves the download landing page and GitHub Pages deployment. It does not browse Gopher: a browser client needs a separate HTTPS/WebSocket gateway transport for direct TCP resources. The proposed HTML-to-text browser extension and optional native companion are described in [REVIEW.md](REVIEW.md); they have not been implemented in this fix.
 
 ## Supported content
 

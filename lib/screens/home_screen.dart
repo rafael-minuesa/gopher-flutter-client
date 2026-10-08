@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
@@ -6,6 +7,7 @@ import '../widgets/menu_view.dart';
 import '../widgets/text_view.dart';
 import 'bookmarks_screen.dart';
 import 'history_screen.dart';
+import 'web_landing_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +19,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Gopher Client')),
+        body: const WebLandingPage(),
+      );
+    }
     final appState = context.watch<AppState>();
     return Scaffold(
       appBar: AppBar(
