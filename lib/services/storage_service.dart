@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/gopher_item.dart';
 
 /// Bookmark data model
 class Bookmark {
@@ -8,23 +7,20 @@ class Bookmark {
   final String url;
   final DateTime created;
 
-  Bookmark({
-    required this.title,
-    required this.url,
-    DateTime? created,
-  }) : created = created ?? DateTime.now();
+  Bookmark({required this.title, required this.url, DateTime? created})
+    : created = created ?? DateTime.now();
 
   Map<String, dynamic> toJson() => {
-        'title': title,
-        'url': url,
-        'created': created.toIso8601String(),
-      };
+    'title': title,
+    'url': url,
+    'created': created.toIso8601String(),
+  };
 
   factory Bookmark.fromJson(Map<String, dynamic> json) => Bookmark(
-        title: json['title'] as String,
-        url: json['url'] as String,
-        created: DateTime.parse(json['created'] as String),
-      );
+    title: json['title'] as String,
+    url: json['url'] as String,
+    created: DateTime.parse(json['created'] as String),
+  );
 }
 
 /// History entry data model
@@ -33,23 +29,20 @@ class HistoryEntry {
   final String title;
   final DateTime timestamp;
 
-  HistoryEntry({
-    required this.url,
-    required this.title,
-    DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+  HistoryEntry({required this.url, required this.title, DateTime? timestamp})
+    : timestamp = timestamp ?? DateTime.now();
 
   Map<String, dynamic> toJson() => {
-        'url': url,
-        'title': title,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'url': url,
+    'title': title,
+    'timestamp': timestamp.toIso8601String(),
+  };
 
   factory HistoryEntry.fromJson(Map<String, dynamic> json) => HistoryEntry(
-        url: json['url'] as String,
-        title: json['title'] as String,
-        timestamp: DateTime.parse(json['timestamp'] as String),
-      );
+    url: json['url'] as String,
+    title: json['title'] as String,
+    timestamp: DateTime.parse(json['timestamp'] as String),
+  );
 }
 
 /// Service for managing bookmarks and history
@@ -59,23 +52,73 @@ class StorageService {
   static const int _maxHistoryItems = 100;
 
   SharedPreferences? _prefs;
+  Future<void>? _initialization;
+  Future<void> _writes = Future.value();
+  String? warning;
 
   Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
+    if (_prefs != null) return;
+    final initialization = _initialization ??= (() async {
+      _prefs = await SharedPreferences.getInstance();
+    })();
+    try {
+      await initialization;
+    } finally {
+      _initialization = null;
+    }
+  }
+
+  Future<T> _mutate<T>(Future<T> Function() action) {
+    final result = _writes.then((_) => action());
+    _writes = result.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stack) {},
+    );
+    return result;
+  }
+
+  Future<List<T>> _readEntries<T>(
+    String key,
+    T Function(Map<String, dynamic>) decode,
+  ) async {
+    await _ensureInitialized();
+    final raw = _prefs!.getString(key);
+    if (raw == null) return [];
+    final entries = <T>[];
+    var damaged = false;
+    try {
+      final data = json.decode(raw);
+      if (data is! List) throw const FormatException('Expected a list');
+      for (final entry in data) {
+        try {
+          entries.add(decode(Map<String, dynamic>.from(entry as Map)));
+        } catch (_) {
+          damaged = true;
+        }
+      }
+    } catch (_) {
+      damaged = true;
+    }
+    if (damaged) {
+      // Preserve the original before a later user action rewrites the list.
+      final backup = '$key.recovery';
+      if (!_prefs!.containsKey(backup) &&
+          !await _prefs!.setString(backup, raw)) {
+        throw StateError('Could not preserve damaged saved data');
+      }
+      warning =
+          'Some saved entries could not be read. The original data was kept for recovery.';
+    }
+    return entries;
   }
 
   // Bookmarks management
 
   Future<List<Bookmark>> getBookmarks() async {
-    await _ensureInitialized();
-    final jsonString = _prefs!.getString(_bookmarksKey);
-    if (jsonString == null) return [];
-
-    final List<dynamic> jsonList = json.decode(jsonString);
-    return jsonList.map((json) => Bookmark.fromJson(json)).toList();
+    return _readEntries(_bookmarksKey, Bookmark.fromJson);
   }
 
-  Future<void> addBookmark(Bookmark bookmark) async {
+  Future<void> addBookmark(Bookmark bookmark) => _mutate(() async {
     final bookmarks = await getBookmarks();
 
     // Avoid duplicates
@@ -85,13 +128,13 @@ class StorageService {
 
     bookmarks.add(bookmark);
     await _saveBookmarks(bookmarks);
-  }
+  });
 
-  Future<void> removeBookmark(String url) async {
+  Future<void> removeBookmark(String url) => _mutate(() async {
     final bookmarks = await getBookmarks();
     bookmarks.removeWhere((b) => b.url == url);
     await _saveBookmarks(bookmarks);
-  }
+  });
 
   Future<bool> isBookmarked(String url) async {
     final bookmarks = await getBookmarks();
@@ -101,21 +144,18 @@ class StorageService {
   Future<void> _saveBookmarks(List<Bookmark> bookmarks) async {
     await _ensureInitialized();
     final jsonString = json.encode(bookmarks.map((b) => b.toJson()).toList());
-    await _prefs!.setString(_bookmarksKey, jsonString);
+    if (!await _prefs!.setString(_bookmarksKey, jsonString)) {
+      throw StateError('Could not save bookmarks');
+    }
   }
 
   // History management
 
   Future<List<HistoryEntry>> getHistory() async {
-    await _ensureInitialized();
-    final jsonString = _prefs!.getString(_historyKey);
-    if (jsonString == null) return [];
-
-    final List<dynamic> jsonList = json.decode(jsonString);
-    return jsonList.map((json) => HistoryEntry.fromJson(json)).toList();
+    return _readEntries(_historyKey, HistoryEntry.fromJson);
   }
 
-  Future<void> addToHistory(HistoryEntry entry) async {
+  Future<void> addToHistory(HistoryEntry entry) => _mutate(() async {
     final history = await getHistory();
 
     // Remove existing entry with same URL to avoid duplicates
@@ -130,17 +170,21 @@ class StorageService {
     }
 
     await _saveHistory(history);
-  }
+  });
 
-  Future<void> clearHistory() async {
+  Future<void> clearHistory() => _mutate(() async {
     await _ensureInitialized();
-    await _prefs!.remove(_historyKey);
-  }
+    if (!await _prefs!.remove(_historyKey)) {
+      throw StateError('Could not clear history');
+    }
+  });
 
   Future<void> _saveHistory(List<HistoryEntry> history) async {
     await _ensureInitialized();
     final jsonString = json.encode(history.map((h) => h.toJson()).toList());
-    await _prefs!.setString(_historyKey, jsonString);
+    if (!await _prefs!.setString(_historyKey, jsonString)) {
+      throw StateError('Could not save history');
+    }
   }
 
   Future<void> _ensureInitialized() async {

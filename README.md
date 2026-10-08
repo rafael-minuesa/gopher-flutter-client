@@ -1,140 +1,103 @@
 # Gopher Flutter Client
 
-A modern, cross-platform Gopher protocol client built with Flutter.
+A native Gopher browser with a consistent text interface, typed menus and documents, search, bookmarks, and browsing history.
 
-## Features
+Current version: **1.0.1+2**. See [CHANGELOG.md](CHANGELOG.md) for release changes.
 
-- **Full Gopher Protocol Support**: Browse Gopher servers with support for directories, text files, search servers, and more
-- **Modern UI**: Clean, Material Design 3 interface with dark mode support
-- **Navigation**: Back/forward buttons, history tracking, and bookmarks
-- **Cross-Platform**: Runs on Android, iOS, Web, Windows, macOS, and Linux
-- **Bookmarks**: Save your favorite Gopher sites
-- **History**: Keep track of recently visited pages
-- **Search Support**: Search-enabled Gopher servers
+## Install and use on Linux
 
-## What is Gopher?
+The first validated build target is Linux x86-64. The package contains the application, Flutter runtime libraries, and assets; Flutter is not needed to run it. A graphical Linux desktop with GTK 3 is required. Builds use Flutter 3.32.7; portable compatibility across Linux distributions still needs validation.
 
-Gopher is a protocol for distributing, searching, and retrieving documents over the Internet. It was designed at the University of Minnesota in 1991 and preceded the World Wide Web. While largely superseded by HTTP, Gopher servers still exist and offer a unique, text-focused browsing experience.
+When a Linux release package is available, extract `gopher-client-<version>-linux-x86_64.tar.gz` and either run `bundle/gopher_flutter_client` directly or run:
 
-## Getting Started
-
-### Prerequisites
-
-- Flutter SDK (3.0.0 or higher)
-- Dart SDK (included with Flutter)
-
-### Installation
-
-1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/gopher-flutter-client.git
+./install.sh
+```
+
+The installer copies the complete bundle into your user data directory, adds Gopher Client to the application menu, and registers `gopher://` links when `xdg-mime` is available. It does not require administrator access. Use `./install.sh --no-register` to keep your existing default Gopher handler. Applications install under `${XDG_DATA_HOME:-$HOME/.local/share}/gopher-client/<version>`.
+
+There is no published release from this change yet. Developers can generate the package with the command below; the Linux CI workflow also uploads build artifacts.
+
+Open the app and enter a Gopher URL or bare hostname. The starting screen includes example destinations. Text pages support selection, copying, and a working wrap toggle; menus provide directory, text, search, and web-link actions. Bookmark and history selections return you to Browse. Back, Forward, Reload, and Retry preserve the resource type and search query.
+
+Standard URLs include the resource type immediately after the first slash:
+
+```text
+gopher://gopher.floodgap.com                 root menu
+gopher://example.org/1/docs                  menu with selector /docs
+gopher://example.org/0/readme.txt            text with selector /readme.txt
+gopher://example.org/7search%09two%20words    search selector search, query two words
+```
+
+Selectors are opaque; the app does not guess parent directories. An explicit port is supported, including local servers. Gopher is a plain TCP protocol. Text responses use UTF-8, with Latin-1 fallback for legacy bytes; this fallback does not detect other legacy character sets.
+
+## Develop and test
+
+Use Flutter **3.32.7**, the version recorded in `.flutter-version`, and its bundled Dart 3.8.1. The application's resolved dependencies are committed in `pubspec.lock`. Native platform build tools are also required; `flutter doctor` describes missing prerequisites.
+
+```bash
+git clone https://github.com/rafael-minuesa/gopher-flutter-client.git
 cd gopher-flutter-client
+flutter pub get --enforce-lockfile
+flutter analyze
+flutter test
+flutter run -d linux
 ```
 
-2. Get dependencies:
+The tests use a local Gopher fixture server rather than public servers. They cover URL round trips, protocol framing, text encoding, search requests, response bounds and deadlines, cancellation, typed navigation, stale responses, persistence recovery, and the search/bookmark/wrap UI.
+
+Validated on 2026-10-08 with Flutter 3.32.7: all 32 regression tests passed, analysis and formatting checks passed, and the Linux release package built successfully. The package was installed into a temporary user data directory (including spaces and a percent sign), its desktop entry was validated, and the installed app was launched on a virtual display and fetched a text document from a local Gopher server. Public-server connectivity, CI execution, and other platforms were not tested.
+
+The app also accepts a Gopher URL as a native command-line argument:
+
 ```bash
-flutter pub get
+./build/linux/x64/release/bundle/gopher_flutter_client 'gopher://example.org/0/readme.txt'
 ```
 
-3. Run the app:
+## Build packages
+
 ```bash
-flutter run
+dev-tools/package-linux.sh
 ```
 
-## Usage
+This builds Linux in release mode and writes the complete archive and SHA-256 checksum into `dist/`. Set `FLUTTER_BIN` to select a particular SDK. Do not distribute the executable by itself: it requires the accompanying `lib/` and `data/` directories. `.github/workflows/checks.yml` checks formatting, analyzes, tests, builds, and uploads the Linux package without publishing a release.
 
-1. Enter a Gopher URL in the address bar (e.g., `gopher://gopher.floodgap.com`)
-2. Click "Go" or press Enter
-3. Navigate through directories by clicking on items
-4. Use the back/forward buttons to navigate
-5. Bookmark your favorite sites
-6. View your browsing history
+Native runner projects are also present for Android, iOS, Windows, and macOS. Android has release network permission; macOS has outgoing-network sandbox entitlements. Their builds and OS link integration have not been validated in this Linux environment:
 
-## Example Gopher Servers
-
-Try these popular Gopher servers:
-
-- `gopher://gopher.floodgap.com` - Floodgap Systems
-- `gopher://gopher.quux.org` - Quux.org
-- `gopher://gopherpedia.com` - Gopherpedia (Wikipedia mirror)
-- `gopher://gopher.club` - Gopher Club
-
-## Architecture
-
-The app is structured as follows:
-
-```
-lib/
-├── models/          # Data models (GopherItem, GopherAddress)
-├── services/        # Business logic (GopherClient, StorageService, AppState)
-├── screens/         # Full-page screens
-├── widgets/         # Reusable UI components
-└── main.dart        # App entry point
-```
-
-### Key Components
-
-- **GopherClient**: Handles TCP socket connections and Gopher protocol communication
-- **AppState**: State management using Provider pattern
-- **StorageService**: Persistent storage for bookmarks and history using SharedPreferences
-- **GopherItem**: Parses and represents Gopher menu items
-
-## Gopher Protocol Support
-
-The client supports the following Gopher item types:
-
-| Type | Code | Description | Supported |
-|------|------|-------------|-----------|
-| Text File | 0 | Plain text document | ✅ |
-| Directory | 1 | Menu/submenu | ✅ |
-| Search | 7 | Search server | ✅ |
-| Binary | 9 | Binary file | ⚠️ Display only |
-| GIF | g | GIF image | ⚠️ Display only |
-| Image | I | Image file | ⚠️ Display only |
-| HTML | h | HTML document | ⚠️ Display only |
-| Info | i | Informational text | ✅ |
-| Error | 3 | Error message | ✅ |
-
-## Building for Production
-
-### Android
 ```bash
 flutter build apk --release
-```
-
-### iOS
-```bash
 flutter build ios --release
-```
-
-### Web
-```bash
-flutter build web --release
-```
-
-### Desktop (Windows/macOS/Linux)
-```bash
 flutter build windows --release
 flutter build macos --release
-flutter build linux --release
 ```
 
-## Contributing
+Use the appropriate host toolchain for each target. Android currently uses Flutter's generated development signing setup; configure release signing before public distribution. iOS and macOS distribution require their respective signing configuration.
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+A browser/web build is not supported by the current direct TCP implementation. It needs a separate HTTPS/WebSocket gateway transport. The proposed HTML-to-text browser extension and optional native companion are described in [REVIEW.md](REVIEW.md); they have not been implemented in this fix.
 
-## License
+## Supported content
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+| Resource | Behavior |
+| --- | --- |
+| Type `1`: menu | Parsed list of typed links and information |
+| Type `0`: text | Selectable document with protocol framing removed |
+| Type `7`: search | Query dialog and navigable results; query preserved in URLs/history |
+| Type `h`: external `URL:http(s)` link | Opens the system web browser |
+| Type `h`: Gopher-hosted HTML | Displays HTML source as text |
+| Information and error rows | Displayed without navigation |
+| Binary, images, Telnet, and other types | Listed as unsupported for reading; no download UI |
 
-## Acknowledgments
+Connections have a 30-second total deadline and an 8 MiB response limit. A new visit cancels the previous connection and ignores obsolete results. Saved-data failures leave browsing available; damaged JSON is preserved under recovery keys and valid entries remain usable.
 
-- The Gopher protocol specification (RFC 1436)
-- The Flutter team for the excellent framework
-- The Gopher community for keeping the protocol alive
+## Layout
 
-## Resources
+```text
+lib/models/      Typed addresses and menu items
+lib/services/    TCP client, navigation state, persistence
+lib/screens/     Browse, bookmarks, history
+lib/widgets/     Address, menu and text controls
+test/            Protocol, state, storage and UI regression tests
+dev-tools/       Linux packaging and user installation
+```
 
-- [Gopher Protocol (RFC 1436)](https://tools.ietf.org/html/rfc1436)
-- [Gopher Wikipedia](https://en.wikipedia.org/wiki/Gopher_(protocol))
-- [Flutter Documentation](https://flutter.dev/docs)
+Licensed under [MIT](LICENSE). Protocol references: [RFC 1436](https://www.rfc-editor.org/rfc/rfc1436) and [RFC 4266](https://www.rfc-editor.org/rfc/rfc4266).

@@ -28,7 +28,7 @@ class _AddressBarState extends State<AddressBar> {
         color: Theme.of(context).colorScheme.surface,
         border: Border(
           bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
           ),
         ),
       ),
@@ -92,12 +92,7 @@ class _AddressBarState extends State<AddressBar> {
   }
 
   void _navigate(BuildContext context, String url) {
-    // Add scheme if missing
-    if (!url.startsWith('gopher://')) {
-      url = 'gopher://$url';
-    }
-
-    context.read<AppState>().navigate(url);
+    context.read<AppState>().navigate(url.trim());
     _focusNode.unfocus();
   }
 }

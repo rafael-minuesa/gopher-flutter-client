@@ -1,0 +1,132 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gopher_flutter_client/models/gopher_item.dart';
+import 'package:gopher_flutter_client/screens/home_screen.dart';
+import 'package:gopher_flutter_client/services/app_state.dart';
+import 'package:gopher_flutter_client/services/gopher_client.dart';
+import 'package:gopher_flutter_client/widgets/text_view.dart';
+
+class ScreenClient extends GopherClient {
+  @override
+  Future<List<GopherItem>> fetchMenu(
+    GopherAddress address, {
+    GopherRequest? request,
+  }) async {
+    if (address.query != null) {
+      return [GopherItem.fromLine('iResults for ${address.query}')];
+    }
+    return [GopherItem.fromLine('7Search documents\t/search\texample.org\t70')];
+  }
+
+  @override
+  Future<String> fetchText(
+    GopherAddress address, {
+    GopherRequest? request,
+  }) async => 'Saved document body';
+}
+
+void main() {
+  testWidgets('short documents start at the reading margin', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: TextView(content: 'Short document')),
+      ),
+    );
+    expect(tester.getTopLeft(find.byType(SelectableText)).dx, 16);
+  });
+  testWidgets('word wrap switches to horizontally scrollable text', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 300,
+            child: TextView(content: 'A long line ' * 100),
+          ),
+        ),
+      ),
+    );
+    final horizontal = find.byWidgetPredicate(
+      (widget) =>
+          widget is SingleChildScrollView &&
+          widget.scrollDirection == Axis.horizontal,
+    );
+    expect(horizontal, findsNothing);
+    await tester.tap(find.byTooltip('Disable word wrap'));
+    await tester.pump();
+    expect(horizontal, findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.byTooltip('Enable word wrap'));
+    await tester.pump();
+    expect(horizontal, findsNothing);
+  });
+
+  testWidgets('search dialog loads query results', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final state = AppState(client: ScreenClient());
+    addTearDown(state.dispose);
+    await state.init();
+    await state.navigate('gopher://example.org');
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: state,
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.tap(find.text('Search documents'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), 'some words');
+    await tester.tap(find.widgetWithText(TextButton, 'Search'));
+    await tester.pumpAndSettle();
+    expect(find.text('Results for some words'), findsOneWidget);
+    expect(state.currentAddress!.query, 'some words');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('opening a bookmark switches to Browse and shows text', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final state = AppState(client: ScreenClient());
+    addTearDown(state.dispose);
+    await state.init();
+    await state.addBookmark('Saved document', 'gopher://example.org:70/0notes');
+    state.selectTab(1);
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: state,
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.tap(find.text('Saved document'));
+    await tester.pumpAndSettle();
+    expect(state.selectedTab, 0);
+    expect(find.text('Saved document body'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('small screens can show navigation and document controls', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    final state = AppState(client: ScreenClient());
+    addTearDown(state.dispose);
+    await state.init();
+    await state.navigate('gopher://example.org/0notes');
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: state,
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+}

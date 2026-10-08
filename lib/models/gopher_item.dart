@@ -1,22 +1,22 @@
 /// Represents a Gopher menu item type
 enum GopherItemType {
-  file('0'),              // Text file
-  directory('1'),         // Directory/menu
-  ccso('2'),             // CCSO nameserver
-  error('3'),            // Error
-  binhex('4'),           // BinHex file
-  dos('5'),              // DOS binary archive
-  uuencoded('6'),        // UUencoded file
-  search('7'),           // Index-Search server
-  telnet('8'),           // Telnet session
-  binary('9'),           // Binary file
-  redundant('+'),        // Redundant server
-  tn3270('T'),           // TN3270 session
-  gif('g'),              // GIF image
-  image('I'),            // Image file
-  info('i'),             // Informational message
-  html('h'),             // HTML file
-  unknown('?');          // Unknown type
+  file('0'), // Text file
+  directory('1'), // Directory/menu
+  ccso('2'), // CCSO nameserver
+  error('3'), // Error
+  binhex('4'), // BinHex file
+  dos('5'), // DOS binary archive
+  uuencoded('6'), // UUencoded file
+  search('7'), // Index-Search server
+  telnet('8'), // Telnet session
+  binary('9'), // Binary file
+  redundant('+'), // Redundant server
+  tn3270('T'), // TN3270 session
+  gif('g'), // GIF image
+  image('I'), // Image file
+  info('i'), // Informational message
+  html('h'), // HTML file
+  unknown('?'); // Unknown type
 
   final String code;
   const GopherItemType(this.code);
@@ -58,6 +58,8 @@ class GopherItem {
     required this.port,
   });
 
+  bool get isNavigable => type.isNavigable;
+
   /// Parse a Gopher menu line
   /// Format: <type><display text><TAB><selector><TAB><host><TAB><port>
   factory GopherItem.fromLine(String line) {
@@ -74,6 +76,13 @@ class GopherItem {
     final type = GopherItemType.fromCode(line[0]);
     final parts = line.substring(1).split('\t');
 
+    if (type.isNavigable &&
+        (parts.length < 4 ||
+            parts[2].isEmpty ||
+            int.tryParse(parts[3]) == null)) {
+      throw const FormatException('Incomplete Gopher menu item');
+    }
+
     return GopherItem(
       type: type,
       displayText: parts.isNotEmpty ? parts[0] : '',
@@ -86,8 +95,11 @@ class GopherItem {
   /// Convert to a Gopher URL
   String toUrl() {
     if (host.isEmpty) return '';
-    return 'gopher://$host:$port/$selector';
+    return address.toUrl();
   }
+
+  GopherAddress get address =>
+      GopherAddress(host: host, port: port, selector: selector, type: type);
 
   @override
   String toString() {
@@ -100,37 +112,91 @@ class GopherAddress {
   final String host;
   final int port;
   final String selector;
+  final GopherItemType type;
+  final String? query;
 
   GopherAddress({
     required this.host,
     this.port = 70,
     this.selector = '',
-  });
+    this.type = GopherItemType.directory,
+    this.query,
+  }) {
+    if (host.isEmpty || RegExp(r'\s|[/@?#]').hasMatch(host)) {
+      throw ArgumentError('Enter a valid Gopher host');
+    }
+    if (port < 1 || port > 65535) {
+      throw ArgumentError('Port must be between 1 and 65535');
+    }
+    if (RegExp(r'[\r\n\t]').hasMatch(selector) ||
+        (query != null && RegExp(r'[\r\n\t]').hasMatch(query!))) {
+      throw ArgumentError(
+        'Selectors and queries cannot contain tabs or newlines',
+      );
+    }
+    if (query != null && type != GopherItemType.search) {
+      throw ArgumentError('Only search addresses can contain a query');
+    }
+  }
 
   /// Parse a Gopher URL
-  /// Format: gopher://host:port/selector
+  /// Format: gopher://host:port/<type><selector>[%09<query>].
   factory GopherAddress.fromUrl(String url) {
-    final uri = Uri.parse(url);
+    final input = url.trim();
+    final uri = Uri.parse(input.contains('://') ? input : 'gopher://$input');
 
     if (uri.scheme != 'gopher') {
       throw ArgumentError('Invalid Gopher URL: must start with gopher://');
     }
 
-    String selector = uri.path;
-    if (selector.startsWith('/')) {
-      selector = selector.substring(1);
+    if (uri.userInfo.isNotEmpty || uri.hasQuery || uri.hasFragment) {
+      throw ArgumentError(
+        'Encode selector characters such as ? and # in the URL',
+      );
+    }
+
+    final path = uri.path.startsWith('/') ? uri.path.substring(1) : uri.path;
+    final type = path.isEmpty
+        ? GopherItemType.directory
+        : GopherItemType.fromCode(path[0]);
+    if (type == GopherItemType.unknown) {
+      throw ArgumentError('Unknown Gopher item type');
+    }
+    final fields = (path.isEmpty ? '' : path.substring(1)).split(
+      RegExp('%09', caseSensitive: false),
+    );
+    if (fields.length > 2) {
+      throw ArgumentError('Gopher+ requests are not supported');
     }
 
     return GopherAddress(
       host: uri.host,
-      port: uri.port != 0 ? uri.port : 70,
-      selector: selector,
+      // Uri normalizes an explicit :0 away for schemes without a known port.
+      port: _portFromInput(input),
+      selector: Uri.decodeComponent(fields[0]),
+      type: type,
+      query: fields.length == 2 ? Uri.decodeComponent(fields[1]) : null,
     );
   }
 
-  String toUrl() {
-    return 'gopher://$host:$port/$selector';
+  static int _portFromInput(String input) {
+    final authority = (input.contains('://') ? input.split('://').last : input)
+        .split('/')
+        .first;
+    final match = RegExp(r':([0-9]+)$').firstMatch(authority);
+    return match == null ? 70 : int.parse(match.group(1)!);
   }
+
+  String toUrl() {
+    final authority = host.contains(':') && !host.startsWith('[')
+        ? '[$host]'
+        : host;
+    final path = Uri.encodeComponent(selector).replaceAll('%2F', '/');
+    final search = query == null ? '' : '%09${Uri.encodeComponent(query!)}';
+    return 'gopher://$authority:$port/${type.code}$path$search';
+  }
+
+  String get request => query == null ? selector : '$selector\t$query';
 
   @override
   String toString() => toUrl();
@@ -142,8 +208,10 @@ class GopherAddress {
           runtimeType == other.runtimeType &&
           host == other.host &&
           port == other.port &&
-          selector == other.selector;
+          selector == other.selector &&
+          type == other.type &&
+          query == other.query;
 
   @override
-  int get hashCode => host.hashCode ^ port.hashCode ^ selector.hashCode;
+  int get hashCode => Object.hash(host, port, selector, type, query);
 }

@@ -66,7 +66,7 @@ class _BookmarkItem extends StatelessWidget {
         onPressed: () => _confirmDelete(context),
       ),
       onTap: () {
-        context.read<AppState>().navigate(bookmark.url);
+        context.read<AppState>().navigate(bookmark.url, title: bookmark.title);
       },
     );
   }
@@ -91,11 +91,13 @@ class _BookmarkItem extends StatelessWidget {
     );
 
     if (result == true && context.mounted) {
-      await context.read<AppState>().removeBookmark(bookmark.url);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bookmark removed')),
-        );
+      final removed = await context.read<AppState>().removeBookmark(
+        bookmark.url,
+      );
+      if (removed && context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Bookmark removed')));
       }
     }
   }

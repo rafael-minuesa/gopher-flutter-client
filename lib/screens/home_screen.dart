@@ -15,15 +15,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<AppState>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gopher Client'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Reload',
+            onPressed: appState.currentAddress != null && !appState.isLoading
+                ? appState.reload
+                : null,
+          ),
           Consumer<AppState>(
             builder: (context, state, child) {
               return IconButton(
@@ -65,33 +71,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: IndexedStack(
-        index: _selectedIndex,
-        children: const [
-          BrowserTab(),
-          BookmarksScreen(),
-          HistoryScreen(),
-        ],
+        index: appState.selectedTab,
+        children: const [BrowserTab(), BookmarksScreen(), HistoryScreen()],
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        selectedIndex: appState.selectedTab,
+        onDestinationSelected: appState.selectTab,
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.public),
-            label: 'Browse',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bookmark),
-            label: 'Bookmarks',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.history),
-            label: 'History',
-          ),
+          NavigationDestination(icon: Icon(Icons.public), label: 'Browse'),
+          NavigationDestination(icon: Icon(Icons.bookmark), label: 'Bookmarks'),
+          NavigationDestination(icon: Icon(Icons.history), label: 'History'),
         ],
       ),
     );
@@ -103,13 +92,14 @@ class _HomeScreenState extends State<HomeScreen> {
     String url,
   ) async {
     final isBookmarked = await state.isBookmarked(url);
+    if (!context.mounted) return;
 
     if (isBookmarked) {
-      await state.removeBookmark(url);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bookmark removed')),
-        );
+      final removed = await state.removeBookmark(url);
+      if (removed && context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Bookmark removed')));
       }
     } else {
       await _showBookmarkDialog(context, state, url);
@@ -121,14 +111,15 @@ class _HomeScreenState extends State<HomeScreen> {
     AppState state,
     String url,
   ) async {
-    final controller = TextEditingController(text: url);
+    var title = state.currentTitle ?? url;
 
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Add Bookmark'),
-        content: TextField(
-          controller: controller,
+        content: TextFormField(
+          initialValue: title,
+          onChanged: (value) => title = value,
           decoration: const InputDecoration(
             labelText: 'Title',
             border: OutlineInputBorder(),
@@ -141,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
+            onPressed: () => Navigator.pop(context, title),
             child: const Text('Add'),
           ),
         ],
@@ -149,11 +140,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (result != null && result.isNotEmpty) {
-      await state.addBookmark(result, url);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bookmark added')),
-        );
+      final saved = await state.addBookmark(result, url);
+      if (saved && context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Bookmark added')));
       }
     }
   }
@@ -167,13 +158,25 @@ class BrowserTab extends StatelessWidget {
     return Column(
       children: [
         const AddressBar(),
+        Consumer<AppState>(
+          builder: (context, state, child) {
+            if (state.storageWarning == null) return const SizedBox.shrink();
+            return MaterialBanner(
+              content: Text(state.storageWarning!),
+              actions: [
+                TextButton(
+                  onPressed: state.init,
+                  child: const Text('Try again'),
+                ),
+              ],
+            );
+          },
+        ),
         Expanded(
           child: Consumer<AppState>(
             builder: (context, state, child) {
               if (state.isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+                return const Center(child: CircularProgressIndicator());
               }
 
               if (state.error != null) {
@@ -200,6 +203,11 @@ class BrowserTab extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         const SizedBox(height: 16),
+                        if (state.canRetry)
+                          ElevatedButton(
+                            onPressed: state.retry,
+                            child: const Text('Retry'),
+                          ),
                         ElevatedButton(
                           onPressed: state.clearError,
                           child: const Text('Dismiss'),
@@ -215,7 +223,12 @@ class BrowserTab extends StatelessWidget {
               }
 
               if (state.currentContent != null) {
-                return TextView(content: state.currentContent!);
+                return TextView(
+                  content: state.currentContent!,
+                  title: state.currentAddress?.type.code == 'h'
+                      ? 'HTML source'
+                      : (state.currentTitle ?? 'Text Document'),
+                );
               }
 
               return Center(
@@ -243,9 +256,9 @@ class BrowserTab extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    _ExampleLink('gopher://gopher.floodgap.com'),
-                    _ExampleLink('gopher://gopher.quux.org'),
-                    _ExampleLink('gopher://gopherpedia.com'),
+                    const _ExampleLink('gopher://gopher.floodgap.com'),
+                    const _ExampleLink('gopher://gopher.quux.org'),
+                    const _ExampleLink('gopher://gopherpedia.com'),
                   ],
                 ),
               );

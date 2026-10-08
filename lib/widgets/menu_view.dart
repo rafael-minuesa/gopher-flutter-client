@@ -30,15 +30,12 @@ class _MenuItemTile extends StatelessWidget {
     // Info items are not clickable
     if (item.type == GopherItemType.info) {
       return Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16.0,
-          vertical: 4.0,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
         child: Text(
           item.displayText,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       );
     }
@@ -58,7 +55,8 @@ class _MenuItemTile extends StatelessWidget {
     return ListTile(
       leading: _getIcon(item.type),
       title: Text(item.displayText),
-      subtitle: item.type == GopherItemType.directory ||
+      subtitle:
+          item.type == GopherItemType.directory ||
               item.type == GopherItemType.file
           ? Text(
               '${item.host}:${item.port}',
@@ -132,21 +130,21 @@ class _MenuItemTile extends StatelessWidget {
   }
 
   Future<void> _showSearchDialog(BuildContext context, GopherItem item) async {
-    final controller = TextEditingController();
+    var query = '';
 
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(item.displayText),
-        content: TextField(
-          controller: controller,
+        content: TextFormField(
+          onChanged: (value) => query = value,
           decoration: const InputDecoration(
             labelText: 'Search query',
             border: OutlineInputBorder(),
             prefixIcon: Icon(Icons.search),
           ),
           autofocus: true,
-          onSubmitted: (value) => Navigator.pop(context, value),
+          onFieldSubmitted: (value) => Navigator.pop(context, value),
         ),
         actions: [
           TextButton(
@@ -154,7 +152,7 @@ class _MenuItemTile extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
+            onPressed: () => Navigator.pop(context, query),
             child: const Text('Search'),
           ),
         ],
@@ -162,13 +160,7 @@ class _MenuItemTile extends StatelessWidget {
     );
 
     if (result != null && result.isNotEmpty && context.mounted) {
-      // TODO: Implement search functionality
-      // For now, just show a message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Searching for: $result')),
-      );
+      await context.read<AppState>().search(item, result);
     }
   }
-
-  bool get isNavigable => item.type.isNavigable;
 }

@@ -1,9 +1,12 @@
 # Miscellaneous
 *.class
 *.lock
+!pubspec.lock
 *.log
 *.pyc
 *.swp
+*.iml
+.idea/
 .buildlog/
 .history
 
@@ -41,6 +44,7 @@ analysis_benchmark.json
 .pub-preload-cache/
 .pub/
 build/
+dist/
 flutter_*.png
 linked_*.ds
 unlinked.ds

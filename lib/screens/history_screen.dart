@@ -88,11 +88,11 @@ class HistoryScreen extends StatelessWidget {
     );
 
     if (result == true && context.mounted) {
-      await state.clearHistory();
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('History cleared')),
-        );
+      final cleared = await state.clearHistory();
+      if (cleared && context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('History cleared')));
       }
     }
   }
@@ -111,21 +111,18 @@ class _HistoryItem extends StatelessWidget {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            entry.url,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          Text(entry.url, style: Theme.of(context).textTheme.bodySmall),
           Text(
             _formatTimestamp(entry.timestamp),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
         ],
       ),
       isThreeLine: true,
       onTap: () {
-        context.read<AppState>().navigate(entry.url);
+        context.read<AppState>().navigate(entry.url, title: entry.title);
       },
     );
   }

@@ -1,34 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class TextView extends StatelessWidget {
+class TextView extends StatefulWidget {
   final String content;
+  final String title;
 
-  const TextView({super.key, required this.content});
+  const TextView({
+    super.key,
+    required this.content,
+    this.title = 'Text Document',
+  });
+
+  @override
+  State<TextView> createState() => _TextViewState();
+}
+
+class _TextViewState extends State<TextView> {
+  bool _wrap = true;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final text = SelectableText(
+      widget.content,
+      style: TextStyle(
+        fontFamily: 'monospace',
+        fontSize: 14,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+    );
+    return ColoredBox(
       color: Theme.of(context).colorScheme.surface,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Toolbar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                ),
-              ),
-            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
               children: [
-                Text(
-                  'Text Document',
-                  style: Theme.of(context).textTheme.labelLarge,
+                Expanded(
+                  child: Text(widget.title, overflow: TextOverflow.ellipsis),
                 ),
-                const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.copy),
                   tooltip: 'Copy to clipboard',
@@ -36,26 +47,22 @@ class TextView extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.wrap_text),
-                  tooltip: 'Toggle word wrap',
-                  onPressed: () {
-                    // TODO: Implement word wrap toggle
-                  },
+                  tooltip: _wrap ? 'Disable word wrap' : 'Enable word wrap',
+                  isSelected: _wrap,
+                  onPressed: () => setState(() => _wrap = !_wrap),
                 ),
               ],
             ),
           ),
-          // Content
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: SelectableText(
-                content,
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 14,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
+              padding: const EdgeInsets.all(16),
+              child: _wrap
+                  ? text
+                  : SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: text,
+                    ),
             ),
           ),
         ],
@@ -64,7 +71,7 @@ class TextView extends StatelessWidget {
   }
 
   Future<void> _copyToClipboard(BuildContext context) async {
-    await Clipboard.setData(ClipboardData(text: content));
+    await Clipboard.setData(ClipboardData(text: widget.content));
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

@@ -3,17 +3,23 @@ import 'package:provider/provider.dart';
 import 'services/app_state.dart';
 import 'screens/home_screen.dart';
 
-void main() {
-  runApp(const GopherApp());
+void main(List<String> arguments) {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(GopherApp(initialUrl: arguments.isEmpty ? null : arguments.first));
 }
 
 class GopherApp extends StatelessWidget {
-  const GopherApp({super.key});
+  final String? initialUrl;
+  const GopherApp({super.key, this.initialUrl});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => AppState()..init(),
+      create: (context) {
+        final state = AppState()..init();
+        if (initialUrl != null) state.navigate(initialUrl!);
+        return state;
+      },
       child: MaterialApp(
         title: 'Gopher Client',
         theme: ThemeData(

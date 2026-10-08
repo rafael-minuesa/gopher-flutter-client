@@ -1,0 +1,207 @@
+import 'dart:async';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gopher_flutter_client/models/gopher_item.dart';
+import 'package:gopher_flutter_client/services/app_state.dart';
+import 'package:gopher_flutter_client/services/gopher_client.dart';
+import 'package:gopher_flutter_client/services/storage_service.dart';
+
+class FixtureClient extends GopherClient {
+  final visits = <GopherAddress>[];
+  final delayed = <String, Completer<List<GopherItem>>>{};
+  String? failure;
+
+  @override
+  Future<List<GopherItem>> fetchMenu(
+    GopherAddress address, {
+    GopherRequest? request,
+  }) async {
+    visits.add(address);
+    if (failure == address.selector) throw GopherException('Fixture failure');
+    if (delayed.containsKey(address.selector)) {
+      return delayed[address.selector]!.future;
+    }
+    return [GopherItem.fromLine('i${address.selector}')];
+  }
+
+  @override
+  Future<String> fetchText(
+    GopherAddress address, {
+    GopherRequest? request,
+  }) async {
+    visits.add(address);
+    return 'Text for ${address.selector}';
+  }
+}
+
+class FailingStorage extends StorageService {
+  @override
+  Future<void> init() async => throw StateError('Unavailable');
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  late FixtureClient client;
+  late AppState state;
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    client = FixtureClient();
+    state = AppState(client: client);
+    await state.init();
+  });
+  tearDown(() => state.dispose());
+
+  test(
+    'Back and Forward traverse menus and text without adding visits',
+    () async {
+      await state.navigate('gopher://example.org/1A');
+      await state.navigate('gopher://example.org/0B');
+      await state.navigate('gopher://example.org/1C');
+      await state.goBack();
+      expect(state.currentAddress!.selector, 'B');
+      expect(state.currentContent, 'Text for B');
+      expect(state.canGoForward, isTrue);
+      await state.goBack();
+      expect(state.currentAddress!.selector, 'A');
+      expect(state.canGoBack, isFalse);
+      await state.goForward();
+      expect(state.currentAddress!.selector, 'B');
+      await state.goForward();
+      expect(state.currentAddress!.selector, 'C');
+      expect(state.canGoForward, isFalse);
+    },
+  );
+
+  test('new visits drop the forward branch; reload preserves it', () async {
+    await state.navigate('gopher://example.org/1A');
+    await state.navigate('gopher://example.org/1B');
+    await state.goBack();
+    await state.reload();
+    expect(state.canGoForward, isTrue);
+    await state.navigate('gopher://example.org/1C');
+    expect(state.canGoForward, isFalse);
+    await state.goBack();
+    expect(state.currentAddress!.selector, 'A');
+  });
+
+  test('failed traversal retains cursor and Retry completes it', () async {
+    await state.navigate('gopher://example.org/1A');
+    await state.navigate('gopher://example.org/1B');
+    client.failure = 'A';
+    await state.goBack();
+    expect(state.currentAddress!.selector, 'B');
+    expect(state.canGoBack, isTrue);
+    expect(state.canGoForward, isFalse);
+    expect(state.error, 'Fixture failure');
+    client.failure = null;
+    await state.retry();
+    expect(state.currentAddress!.selector, 'A');
+    expect(state.canGoForward, isTrue);
+  });
+
+  test(
+    'text bookmark and history entries reopen as text and select Browse',
+    () async {
+      await state.navigate('gopher://example.org/0notes', title: 'My notes');
+      await state.addBookmark('My notes', state.currentAddress!.toUrl());
+      state.selectTab(1);
+      await state.navigate(state.bookmarks.single.url);
+      expect(state.selectedTab, 0);
+      expect(state.currentMenu, isNull);
+      expect(state.currentContent, 'Text for notes');
+      expect(
+        GopherAddress.fromUrl(state.history.single.url).type,
+        GopherItemType.file,
+      );
+    },
+  );
+
+  test('search results retain query in address and history', () async {
+    await state.search(
+      GopherItem.fromLine('7Find\t/search\texample.org\t70'),
+      ' two words ',
+    );
+    expect(client.visits.single.request, '/search\ttwo words');
+    expect(GopherAddress.fromUrl(state.history.single.url).query, 'two words');
+  });
+
+  test('obsolete responses cannot replace a newer successful page', () async {
+    final delayed = Completer<List<GopherItem>>();
+    client.delayed['slow'] = delayed;
+    final old = state.navigate('gopher://example.org/1slow');
+    await state.navigate('gopher://example.org/0latest');
+    delayed.complete([GopherItem.fromLine('iOld page')]);
+    await old;
+    expect(state.currentAddress!.selector, 'latest');
+    expect(state.currentMenu, isNull);
+    expect(state.history.length, 1);
+  });
+
+  test(
+    'obsolete failures cannot replace a newer page error or loading state',
+    () async {
+      final delayed = Completer<List<GopherItem>>();
+      client.delayed['slow'] = delayed;
+      final old = state.navigate('gopher://example.org/1slow');
+      await state.navigate('gopher://example.org/1latest');
+      delayed.completeError(GopherException('Old failure'));
+      await old;
+      expect(state.currentAddress!.selector, 'latest');
+      expect(state.error, isNull);
+      expect(state.isLoading, isFalse);
+    },
+  );
+
+  test('storage errors do not prevent reading', () async {
+    final unavailable = AppState(client: client, storage: FailingStorage());
+    addTearDown(unavailable.dispose);
+    await unavailable.init();
+    await unavailable.navigate('gopher://example.org/0readme');
+    expect(unavailable.currentContent, 'Text for readme');
+    expect(unavailable.error, isNull);
+    expect(unavailable.storageWarning, isNotNull);
+    expect(
+      await unavailable.addBookmark(
+        'Readme',
+        unavailable.currentAddress!.toUrl(),
+      ),
+      isFalse,
+    );
+  });
+
+  test('HTML web links open externally; unsafe schemes are rejected', () async {
+    final opened = <Uri>[];
+    final links = AppState(
+      client: client,
+      openUrl: (uri) async {
+        opened.add(uri);
+        return true;
+      },
+    );
+    addTearDown(links.dispose);
+    await links.navigateToItem(
+      GopherItem.fromLine(
+        'hWeb\tURL:https://example.org/docs\texample.org\t70',
+      ),
+    );
+    expect(opened.single.toString(), 'https://example.org/docs');
+    expect(client.visits, isEmpty);
+    expect(links.isLoading, isFalse);
+    await links.navigateToItem(
+      GopherItem.fromLine('hBad\tURL:javascript:alert(1)\texample.org\t70'),
+    );
+    expect(opened.length, 1);
+    expect(links.error, contains('HTTP and HTTPS'));
+  });
+
+  test('a disposed state ignores late completions', () async {
+    final delayed = Completer<List<GopherItem>>();
+    client.delayed['slow'] = delayed;
+    final disposed = AppState(client: client);
+    final navigation = disposed.navigate('gopher://example.org/1slow');
+    disposed.dispose();
+    delayed.complete([]);
+    await navigation;
+    expect(disposed.currentAddress, isNull);
+  });
+}
