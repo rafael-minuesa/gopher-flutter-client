@@ -1,5 +1,16 @@
 # Changelog
 
+## Gopher Reader extension 1.0.0 — 2026-10-08
+
+- Add one-click local HTML conversion for Chromium and Firefox desktop, with Article, Full page, and numbered Links views.
+- Preserve headings, lists, code, tables, language/direction, and image descriptions; exclude scripts, hidden content, editable regions, and form values.
+- Add find, font size, wrapping, appearance, local bookmarks, UTF-8 text export, and explicit source-tab refresh.
+- Keep reading bodies in bounded session storage, preserve them across worker restarts, and remove them when reader tabs close. Persist only settings and explicit bookmark metadata.
+- Package separate browser manifests with bundled Mozilla Readability, generated icons, checksums, instructions, and browser CI checks.
+- Verify actual shortcut activation and reader controls in Chromium and Firefox, plus extraction and background-state regression cases.
+
+The extension has a separate version; the native app remains at `1.0.1+2`. Store publication, signing, continuous conversion across sites, and the native companion are later phases.
+
 ## 1.0.1+2 — 2026-10-08
 
 - Fix compile errors and parse standard Gopher URLs with resource types, escaped selectors, and search queries.

@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Gopher Reader",
+  "description": "Read the current web page as local, distraction-free text and numbered links.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "action": {
+    "default_title": "Read this page as text",
+    "default_icon": {"16": "icons/16.png", "32": "icons/32.png"}
+  },
+  "icons": {"16": "icons/16.png", "32": "icons/32.png", "48": "icons/48.png", "128": "icons/128.png"},
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {"default": "Alt+Shift+G"}
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src 'none'; img-src 'self'; style-src 'self'; base-uri 'none'; frame-src 'none'"
+  },
+  "incognito": "not_allowed"
+}

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gopher Reader</title>
+  <link rel="stylesheet" href="reader.css">
+  <script src="core.js" defer></script>
+  <script src="reader.js" defer></script>
+</head>
+<body>
+  <header class="shell">
+    <div class="brand-row">
+      <span class="brand"><span aria-hidden="true">&gt;_</span> Gopher Reader</span>
+      <div class="actions">
+        <a id="original" hidden target="_blank" rel="noopener noreferrer">Original page ↗</a>
+        <button id="refresh" hidden>Refresh text</button>
+        <button id="saved-open">Saved pages</button>
+      </div>
+    </div>
+    <div id="toolbar" class="toolbar" hidden>
+      <div class="views" role="group" aria-label="Reading view">
+        <button data-mode="article" aria-pressed="true">Article</button>
+        <button data-mode="page" aria-pressed="false">Full page</button>
+        <button data-mode="links" aria-pressed="false">Links <span id="link-count"></span></button>
+      </div>
+      <div class="tools" role="group" aria-label="Reading controls">
+        <button id="find-open">Find</button>
+        <button id="font-down" aria-label="Decrease font size">A−</button>
+        <button id="font-up" aria-label="Increase font size">A+</button>
+        <button id="wrap" aria-pressed="true">Wrap</button>
+        <label class="theme-label"><span class="sr-only">Appearance</span><select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+        <button id="save" aria-pressed="false">Save page</button>
+        <button id="export">Export text</button>
+      </div>
+    </div>
+    <div id="find-panel" class="find-panel" hidden>
+      <label for="find">Find in text</label><input id="find" type="search" autocomplete="off">
+      <output id="find-count" aria-live="polite">0 matches</output>
+      <button id="find-prev" aria-label="Previous match">↑</button>
+      <button id="find-next" aria-label="Next match">↓</button>
+      <button id="find-close" aria-label="Close find">Close</button>
+    </div>
+  </header>
+  <p id="status" class="shell status" role="status" aria-live="polite">Preparing your reading copy…</p>
+  <div id="error" class="shell error" role="alert" hidden></div>
+  <main id="reading" hidden>
+    <div class="document-header">
+      <p class="source"><a id="source" target="_blank" rel="noopener noreferrer"></a></p>
+      <h1 id="title"></h1>
+      <p id="byline" class="muted" hidden></p>
+      <p id="note" class="muted" hidden></p>
+    </div>
+    <div id="content"></div>
+    <footer><span id="captured"></span> · Text stays in this browser.</footer>
+  </main>
+  <dialog id="saved-dialog" aria-labelledby="saved-title">
+    <div class="dialog-heading"><h2 id="saved-title">Saved pages</h2><button id="saved-close">Close</button></div>
+    <p class="muted">Bookmarks keep titles and links. Open a page and click the extension to read a new copy.</p>
+    <ul id="saved-list"></ul>
+  </dialog>
+</body>
+</html>

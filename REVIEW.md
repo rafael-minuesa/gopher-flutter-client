@@ -1,6 +1,6 @@
 # Project review and proposed direction
 
-Update on 2026-10-08: the native client fixes below have been implemented, with typed URLs and navigation, working search/wrap, explicit web-link handling, bounded/cancellable transport, persistence recovery, and native platform runners. Linux release packaging, a user installer, and build checks are now present. See README.md for current supported behavior and installation. The remainder of this review records the original findings and the proposed extension roadmap.
+Update on 2026-10-08: the native client fixes below have been implemented, with typed URLs and navigation, working search/wrap, explicit web-link handling, bounded/cancellable transport, persistence recovery, and native platform runners. Linux release packaging, a user installer, and build checks are now present. See README.md for current supported behavior and installation. Gopher Reader extension 1.0.0 now implements the standalone local conversion phase for Chromium and Firefox, with production-manifest browser tests and installable development packages. The native companion remains proposed. The remainder of this review records the original findings and design roadmap.
 
 Reviewed on 2026-10-07. This is a review and implementation proposal; the application and extension have not been changed or built as part of it.
 

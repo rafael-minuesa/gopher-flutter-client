@@ -2,7 +2,9 @@
 
 A native Gopher browser with a consistent text interface, typed menus and documents, search, bookmarks, and browsing history.
 
-Current version: **1.0.1+2**. See [CHANGELOG.md](CHANGELOG.md) for release changes.
+Current native app version: **1.0.1+2**. See [CHANGELOG.md](CHANGELOG.md) for release changes.
+
+The standalone **Gopher Reader extension 1.0.0** converts a loaded web page into a local text-and-links view in one click. See [extension installation and usage](extension/README.md) for Chromium and Firefox packages.
 
 ## Install and use on Linux
 
@@ -73,7 +75,7 @@ flutter build macos --release
 
 Use the appropriate host toolchain for each target. Android currently uses Flutter's generated development signing setup; configure release signing before public distribution. iOS and macOS distribution require their respective signing configuration.
 
-The web target preserves the download landing page and GitHub Pages deployment. It does not browse Gopher: a browser client needs a separate HTTPS/WebSocket gateway transport for direct TCP resources. The proposed HTML-to-text browser extension and optional native companion are described in [REVIEW.md](REVIEW.md); they have not been implemented in this fix.
+The web target preserves the download landing page and GitHub Pages deployment. It does not browse Gopher: a browser client needs a separate HTTPS/WebSocket gateway transport for direct TCP resources. The standalone HTML-to-text extension is implemented in [extension/](extension/README.md). The optional native companion remains a later phase described in [REVIEW.md](REVIEW.md).
 
 ## Supported content
 

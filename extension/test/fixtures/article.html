@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>A quieter way to read</title><base href="/guides/"><meta name="author" content="The Gopher team"><style>.hidden {display:none}</style></head>
+<body><nav><a href="/">Home</a> <a href="/account">Account</a></nav>
+<article><h1 id="intro">A quieter way to read</h1><p class="byline">By The Gopher team</p>
+<p>Reading on the web can be wonderfully useful. It can also be noisy. A consistent text interface lets the words take the lead, with simple links and a predictable way to move between documents. This paragraph is deliberately long enough to help an article extractor distinguish meaningful writing from a navigation menu.</p>
+<h2 id="details">Keep the structure</h2><p>Headings, paragraphs, code, and lists carry meaning. They should remain in a reading copy. Read the <a href="../reference#examples">reference guide</a>, jump to <a href="article#details">this section</a>, or visit <a href="gopher://example.org/1/">a Gopher menu</a>.</p>
+<p>A local conversion can read the document that is already loaded, including useful text that a page has added after loading. It does not need an account or a remote processing service. The original page stays available whenever an interactive feature is needed.</p>
+<ol start="3"><li>Choose a page.<ul><li>Keep meaningful links.</li></ul></li><li>Read without the clutter.</li></ol>
+<pre><code>if (quiet) {
+  read("text");
+}
+</code></pre>
+<blockquote>Good navigation should feel familiar on every page.</blockquote>
+<table><caption>A small comparison</caption><tr><th>View</th><th>Purpose</th></tr><tr><td>Article</td><td>Main writing</td></tr><tr><td>Links</td><td>Navigation</td></tr></table>
+<img src="/tracking-image.png" alt="A simple tree of document links">
+<p class="hidden">A HIDDEN SECRET</p><div aria-hidden="true">ANOTHER HIDDEN SECRET</div>
+<form><label>Password<input value="SECRET INPUT VALUE"></label><textarea>SECRET FORM TEXT</textarea></form>
+<p><a href="javascript:alert('xss')">Unsafe link</a> <a href="data:text/html,bad">Data link</a> <a href="https://user:password@example.org/">Credential link</a></p>
+<p>&lt;img src=x onerror=alert(1)&gt; stays ordinary text.</p>
+</article><aside>RELATED PAGE SIDEBAR</aside><footer><a href="/privacy">Privacy policy</a></footer>
+<script>window.sourceScriptRuns = (window.sourceScriptRuns || 0) + 1;</script></body></html>
