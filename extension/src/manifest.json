@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Gopher Reader",
   "description": "Read the current web page as local, distraction-free text and numbered links.",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage", "nativeMessaging"],
   "action": {
     "default_title": "Read this page as text",
     "default_icon": {"16": "icons/16.png", "32": "icons/32.png"}

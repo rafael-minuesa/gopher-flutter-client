@@ -2,9 +2,9 @@
 
 A native Gopher browser with a consistent text interface, typed menus and documents, search, bookmarks, and browsing history.
 
-Current native app version: **1.0.1+2**. See [CHANGELOG.md](CHANGELOG.md) for release changes.
+Current native app version: **1.1.0+3**. See [CHANGELOG.md](CHANGELOG.md) for release changes.
 
-The standalone **Gopher Reader extension 1.0.0** converts a loaded web page into a local text-and-links view in one click. See [extension installation and usage](extension/README.md) for Chromium and Firefox packages.
+**Gopher Reader extension 1.1.0** converts a loaded web page into a local text-and-links view in one click. With the Linux app installed, **Open in Gopher app** saves that copy and delivers it through actual Gopher. See [extension installation and usage](extension/README.md).
 
 ## Install and use on Linux
 
@@ -16,7 +16,13 @@ When a Linux release package is available, extract `gopher-client-<version>-linu
 ./install.sh
 ```
 
-The installer copies the complete bundle into your user data directory, adds Gopher Client to the application menu, and registers `gopher://` links when `xdg-mime` is available. It does not require administrator access. Use `./install.sh --no-register` to keep your existing default Gopher handler. Applications install under `${XDG_DATA_HOME:-$HOME/.local/share}/gopher-client/<version>`.
+The installer copies the complete bundle into your user data directory, adds Gopher Client to the application menu, registers browser native messaging, and registers `gopher://` links when `xdg-mime` is available. It does not require administrator access. Use `./install.sh --no-register` to keep your existing default Gopher handler; browser integration still installs. Applications install under `${XDG_DATA_HOME:-$HOME/.local/share}/gopher-client/<version>`.
+
+Install the extension, convert a page, and choose **Open in Gopher app**. The app opens a local Gopher menu containing article text, full-page text, the original source, and numbered links. Other saved destinations stay in Gopher; unsaved web destinations open in the browser. This saves a snapshot of the loaded page, including content you can currently access, without fetching the site again. It does not automatically convert linked websites.
+
+Use **Saved web pages** in the app toolbar to reopen or remove copies and **Stop serving** to stop the local server while keeping saved data. Copies live under `${XDG_DATA_HOME:-$HOME/.local/share}/gopher-reader/pages`, capped at 100 pages and 64 MiB. The companion serves only this library on `127.0.0.1:7070`, accessible to other local Gopher clients and local processes. It remains available after the browser or app closes; an enabled library restarts when the app opens. Opening the library or sending a new copy starts serving again. Nothing is published on your network or the internet. Port 7070 must be free.
+
+The companion is a compiled executable bundled with the Linux package: no Dart, Flutter, Node, or Python installation is needed to run it. Linux integration is tested with Chromium and Firefox desktop. Sandboxed Snap/Flatpak browsers may require a native messaging portal or additional host installation; Windows/macOS integration remains future work. The standalone extension continues to work without the app.
 
 There is no published release from this change yet. Developers can generate the package with the command below; the Linux CI workflow also uploads build artifacts.
 
@@ -48,7 +54,7 @@ flutter run -d linux
 
 The tests use a local Gopher fixture server rather than public servers. They cover URL round trips, protocol framing, text encoding, search requests, response bounds and deadlines, cancellation, typed navigation, stale responses, persistence recovery, and the search/bookmark/wrap UI.
 
-Validated on 2026-10-08 with Flutter 3.32.7: all 32 regression tests passed, analysis and formatting checks passed, and the Linux release package built successfully. The package was installed into a temporary user data directory (including spaces and a percent sign), its desktop entry was validated, and the installed app was launched on a virtual display and fetched a text document from a local Gopher server. The merged upstream web download page also builds successfully and renders at the GitHub Pages base path in a local headless browser. Public-server connectivity, CI execution, and other native platforms were not tested.
+Validated locally on 2026-10-09 with Flutter 3.32.7: 44 protocol, persistence, navigation and UI tests pass, analysis/formatting are clean, and Linux packaging and the web landing-page build succeed. Chromium 148 and Firefox 157 tests install the complete package in temporary XDG directories (including spaces and a percent sign), send actual native messages, read converted content over TCP Gopher, and verify second-page navigation in the existing app window. The library tests cover persistence, framing, removal, damaged data, size/input limits, stop/restart and error recovery. Extension dependencies audit clean. Other native platforms, signed stores and sandboxed browser portals remain unvalidated.
 
 The app also accepts a Gopher URL as a native command-line argument:
 
@@ -75,7 +81,7 @@ flutter build macos --release
 
 Use the appropriate host toolchain for each target. Android currently uses Flutter's generated development signing setup; configure release signing before public distribution. iOS and macOS distribution require their respective signing configuration.
 
-The web target preserves the download landing page and GitHub Pages deployment. It does not browse Gopher: a browser client needs a separate HTTPS/WebSocket gateway transport for direct TCP resources. The standalone HTML-to-text extension is implemented in [extension/](extension/README.md). The optional native companion remains a later phase described in [REVIEW.md](REVIEW.md).
+The web target preserves the download landing page and GitHub Pages deployment. It does not browse Gopher: a browser client needs a separate HTTPS/WebSocket gateway transport for direct TCP resources. HTML conversion and the Linux native handoff are implemented in [extension/](extension/README.md) and [native/](native/README.md).
 
 ## Supported content
 

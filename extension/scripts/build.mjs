@@ -54,6 +54,9 @@ for (const browser of ['chromium', 'firefox']) {
   for (const size of [16, 32, 48, 128]) await writeFile(join(destination, 'icons', `${size}.png`), png(size));
   const manifest = {...base, version: pkg.version};
   if (browser === 'chromium') {
+    // Public key fixes the unpacked extension ID for native host registration.
+    // The private signing key is not part of this project.
+    manifest.key = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvHPvP9aRv1s4LqYqnJ24BAQ0k69tl7AR1XmPHX3Bz5uMK81S24ALS3J+n5sSS5UBbv4sdTUTgraTBreNzlOjhH/MjIKR+o6rPw7d28Sr50Jdra5k/JqUjMJg+58uLeYw1A82IJDIo8RIqStJfXx10ZV4zCzCSYKUs5oUPchRCAQOBGPzRdJIEuJ7eV7JPSSRqgBbE4ZBDOdd45iySTBt4hRntVFlvZXre/55JR/brqtiQz/Olk3QXM6bCO0vMnfEax4TYjUCWH6ipXmQS5aIE7hTimyyX/BYPaaK1p59GsPQwfGsMSD1CY06HgERARfOteGerOSLWbcP/lUChtUBQQIDAQAB';
     manifest.minimum_chrome_version = '112';
     manifest.background = {service_worker: 'background.js'};
   } else {

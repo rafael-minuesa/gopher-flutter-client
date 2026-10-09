@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.0+3 / Gopher Reader extension 1.1.0 — 2026-10-09
+
+- Add Open in Gopher app: send an explicitly selected reading copy through browser native messaging into a persistent local library.
+- Bundle a compiled Linux companion with browser host registration and a loopback Gopher server on port 7070; serve article/full-page text and typed page menus with numbered links.
+- Resolve links to other saved copies locally; preserve external web/Gopher destinations without fetching or automatically converting them.
+- Add the native app's Saved web pages library, removal controls, serving stop/restart, and existing-window navigation on Linux.
+- Bound and validate the handoff and stored data; preserve damaged files, prevent duplicate saves of a reader snapshot, and keep stable local addresses across restarts.
+- Add protocol/persistence regression tests and real Chromium/Firefox package installation, native messaging, TCP and app navigation checks.
+
+Linux desktop integration is the first supported target. Other native platforms, sandboxed browser portal setup, public hosting, and signed/store extension releases remain later work.
+
+Validated locally: 44 Flutter tests, 18 extraction/background cases, clean analysis/formatting, Linux and web builds, complete installed-package handoffs in actual Chromium and Firefox, compiled-host malformed-frame/caller checks, package checksums and a clean dependency audit. Mozilla's linter retains the two existing warnings in bundled Readability; no errors.
+
 ## Gopher Reader extension 1.0.0 — 2026-10-08
 
 - Add one-click local HTML conversion for Chromium and Firefox desktop, with Article, Full page, and numbered Links views.

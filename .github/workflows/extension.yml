@@ -3,10 +3,20 @@ on:
   push:
     paths:
       - 'extension/**'
+      - 'lib/**'
+      - 'native/**'
+      - 'linux/**'
+      - 'dev-tools/**'
+      - 'pubspec.*'
       - '.github/workflows/extension.yml'
   pull_request:
     paths:
       - 'extension/**'
+      - 'lib/**'
+      - 'native/**'
+      - 'linux/**'
+      - 'dev-tools/**'
+      - 'pubspec.*'
       - '.github/workflows/extension.yml'
   workflow_dispatch:
 permissions:
@@ -25,7 +35,16 @@ jobs:
           cache: npm
           cache-dependency-path: extension/package-lock.json
       - name: Install browser test utilities
-        run: sudo apt-get update && sudo apt-get install -y xvfb xdotool zip
+        run: sudo apt-get update && sudo apt-get install -y xvfb xdotool zip dbus-x11 clang cmake ninja-build pkg-config libgtk-3-dev
+      - name: Build the native app and companion package
+        working-directory: .
+        run: |
+          git clone --depth 1 --branch "$(cat .flutter-version)" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          export PATH="$RUNNER_TEMP/flutter/bin:$PATH"
+          flutter pub get --enforce-lockfile
+          dev-tools/package-linux.sh
+          package_file="$GITHUB_WORKSPACE/dist/gopher-client-$(sed -n 's/^version: //p' pubspec.yaml)-linux-$(uname -m).tar.gz"
+          echo "GOPHER_NATIVE_PACKAGE=$package_file" >> "$GITHUB_ENV"
       - run: npm ci --ignore-scripts
       - run: npm run build
       - run: npm test
@@ -33,7 +52,7 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Check actual Chromium activation and reader
-        run: xvfb-run -a --server-args='-screen 0 1440x1100x24' npm run test:browser
+        run: dbus-run-session -- xvfb-run -a --server-args='-screen 0 1440x1100x24' npm run test:browser
       - run: npm run package
       - name: Install the Firefox test browser and driver
         run: |
@@ -45,7 +64,7 @@ jobs:
           echo "GECKODRIVER=$RUNNER_TEMP/gopher-geckodriver/geckodriver" >> "$GITHUB_ENV"
           echo "FIREFOX_BIN=$RUNNER_TEMP/gopher-firefox/firefox/firefox" >> "$GITHUB_ENV"
       - name: Check actual Firefox activation and reader
-        run: xvfb-run -a --server-args='-screen 0 1440x1100x24' npm run test:firefox
+        run: dbus-run-session -- xvfb-run -a --server-args='-screen 0 1440x1100x24' npm run test:firefox
       - uses: actions/upload-artifact@v4
         with:
           name: gopher-reader-extension

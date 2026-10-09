@@ -77,6 +77,27 @@
   }
   async function handle(message) {
     switch (message.type) {
+      case "native.open": {
+        const entry = await entryFor(message.id);
+        const doc = GopherDocument.validate(entry.document);
+        let response;
+        try {
+          response = await api.runtime.sendNativeMessage("org.gopherclient.reader", {
+            protocolVersion: 1, action: "import", id: entry.id,
+            page: {url: doc.source.url, title: doc.source.title,
+              capturedAt: doc.source.capturedAt || "",
+              article: GopherDocument.plainText(doc, "article"),
+              page: GopherDocument.plainText(doc, "page"), links: doc.links}
+          });
+        } catch {
+          throw new Error("Could not connect to Gopher Client. Install the Linux app package and run its install.sh to enable browser integration. Sandboxed browser packages may need additional native messaging setup.");
+        }
+        if (!response?.ok) throw new Error(response?.error || "The native app could not save this page. Try again.");
+        if (typeof response.url !== "string" || !/^gopher:\/\/127\.0\.0\.1:7070\/1\/page\/[a-f0-9-]{36}$/.test(response.url)) {
+          throw new Error("The native companion returned an invalid page address. Update the app and extension together.");
+        }
+        return {url: response.url};
+      }
       case "load": {
         const entry = await entryFor(message.id);
         const data = await api.storage.local.get("preferences");

@@ -257,6 +257,14 @@
     setTimeout(() => URL.revokeObjectURL(url), 10000);
     status("Exported this view as plain text.");
   });
+  $("native-open").addEventListener("click", async () => {
+    $("native-open").disabled = true; clearError(); status("Saving this copy in Gopher Client…");
+    try {
+      const result = await request("native.open", {id});
+      status(`Saved locally and opened in Gopher Client: ${result.url}. Manage copies in the app's Saved web pages library.`);
+    } catch (failure) { error(failure.message); }
+    finally { $("native-open").disabled = false; }
+  });
   document.addEventListener("keydown", event => {
     if (event.key === "/" && !["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName) && doc) { event.preventDefault(); openFind(); }
     if (event.key === "Escape" && !$("find-panel").hidden) closeFind();

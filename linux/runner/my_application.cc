@@ -10,13 +10,47 @@
 struct _MyApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
+  FlMethodChannel* navigation_channel;
+  gboolean navigation_ready;
+  gchar* pending_url;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
+static void forward_url(MyApplication* self, const gchar* address) {
+  if (!self->navigation_ready) {
+    g_free(self->pending_url);
+    self->pending_url = g_strdup(address);
+    return;
+  }
+  g_autoptr(FlValue) url = fl_value_new_string(address);
+  fl_method_channel_invoke_method(self->navigation_channel, "openUrl", url,
+                                 nullptr, nullptr, nullptr);
+}
+
+static void navigation_method_call(FlMethodChannel*, FlMethodCall* call,
+                                   gpointer user_data) {
+  MyApplication* self = MY_APPLICATION(user_data);
+  if (g_strcmp0(fl_method_call_get_name(call), "ready") != 0) {
+    fl_method_call_respond_not_implemented(call, nullptr);
+    return;
+  }
+  self->navigation_ready = TRUE;
+  if (self->pending_url != nullptr) {
+    forward_url(self, self->pending_url);
+    g_clear_pointer(&self->pending_url, g_free);
+  }
+  fl_method_call_respond_success(call, nullptr, nullptr);
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
+  GtkWindow* existing = gtk_application_get_active_window(GTK_APPLICATION(application));
+  if (existing != nullptr) {
+    gtk_window_present(existing);
+    return;
+  }
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -58,27 +92,30 @@ static void my_application_activate(GApplication* application) {
   gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+  g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
+  self->navigation_channel = fl_method_channel_new(
+      fl_engine_get_binary_messenger(fl_view_get_engine(view)),
+      "org.gopherclient/navigation", FL_METHOD_CODEC(codec));
+  fl_method_channel_set_method_call_handler(self->navigation_channel,
+                                           navigation_method_call, self, nullptr);
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }
 
-// Implements GApplication::local_command_line.
-static gboolean my_application_local_command_line(GApplication* application, gchar*** arguments, int* exit_status) {
+// Forward new URLs into the existing window through the session D-Bus instance.
+static int my_application_command_line(GApplication* application, GApplicationCommandLine* command_line) {
   MyApplication* self = MY_APPLICATION(application);
-  // Strip out the first argument as it is the binary name.
-  self->dart_entrypoint_arguments = g_strdupv(*arguments + 1);
-
-  g_autoptr(GError) error = nullptr;
-  if (!g_application_register(application, nullptr, &error)) {
-     g_warning("Failed to register: %s", error->message);
-     *exit_status = 1;
-     return TRUE;
+  g_auto(GStrv) arguments = g_application_command_line_get_arguments(command_line, nullptr);
+  const gboolean running = self->navigation_channel != nullptr;
+  if (!running) {
+    g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
+    self->dart_entrypoint_arguments = g_strdupv(arguments + 1);
   }
-
   g_application_activate(application);
-  *exit_status = 0;
-
-  return TRUE;
+  if (running && arguments[1] != nullptr) {
+    forward_url(self, arguments[1]);
+  }
+  return 0;
 }
 
 // Implements GApplication::startup.
@@ -103,12 +140,14 @@ static void my_application_shutdown(GApplication* application) {
 static void my_application_dispose(GObject* object) {
   MyApplication* self = MY_APPLICATION(object);
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
+  g_clear_object(&self->navigation_channel);
+  g_clear_pointer(&self->pending_url, g_free);
   G_OBJECT_CLASS(my_application_parent_class)->dispose(object);
 }
 
 static void my_application_class_init(MyApplicationClass* klass) {
   G_APPLICATION_CLASS(klass)->activate = my_application_activate;
-  G_APPLICATION_CLASS(klass)->local_command_line = my_application_local_command_line;
+  G_APPLICATION_CLASS(klass)->command_line = my_application_command_line;
   G_APPLICATION_CLASS(klass)->startup = my_application_startup;
   G_APPLICATION_CLASS(klass)->shutdown = my_application_shutdown;
   G_OBJECT_CLASS(klass)->dispose = my_application_dispose;
@@ -125,6 +164,6 @@ MyApplication* my_application_new() {
 
   return MY_APPLICATION(g_object_new(my_application_get_type(),
                                      "application-id", APPLICATION_ID,
-                                     "flags", G_APPLICATION_NON_UNIQUE,
+                                     "flags", G_APPLICATION_HANDLES_COMMAND_LINE,
                                      nullptr));
 }

@@ -12,8 +12,8 @@ The repository includes a GitHub Actions workflow that automatically builds rele
 
 1. **Tag your commit:**
    ```bash
-   git tag v1.0.1
-   git push origin v1.0.1
+   git tag v1.1.0
+   git push origin v1.1.0
    ```
 
 2. **GitHub Actions will automatically:**
@@ -113,12 +113,12 @@ flutter build macos --release
 
 **Manual build:**
 ```bash
-flutter build linux --release
-# Output: build/linux/x64/release/bundle/
+dev-tools/package-linux.sh
+# Output: dist/gopher-client-<version>-linux-x86_64.tar.gz, including the native companion
 ```
 
 **Distribution:**
-- Users extract the tarball and run the executable
+- Users extract the tarball and run `./install.sh` to install the complete app and browser native messaging host; direct bundle execution does not register browser integration.
 - May need to install GTK dependencies:
   ```bash
   sudo apt-get install libgtk-3-0

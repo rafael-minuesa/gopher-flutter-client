@@ -59,8 +59,9 @@ test('language and reading direction survive conversion', async () => {
 });
 
 test('large documents are bounded and disclose truncation', () => {
-  const {dom, doc} = capture('<html><head><title>Long</title></head><body><main>' + '<p>words '.repeat(1) + 'a'.repeat(240000) + '</p><p>Later</p></main></body></html>');
+  const {dom, doc, core} = capture('<html><head><title>Long</title></head><body><main>' + '<p>words '.repeat(1) + 'a'.repeat(240000) + '</p><p>Later</p></main></body></html>');
   assert.ok(doc.notices.length);
+  assert.ok(core.plainText(doc).includes(`Note: ${doc.notices[0]}`), 'Export and native handoff must disclose shortened content');
   assert.ok(JSON.stringify(doc).length < 1800000);
   dom.window.close();
 });

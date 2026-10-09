@@ -22,7 +22,10 @@ case "$data_home" in
 esac
 app_dir="$data_home/gopher-client/$version"
 mkdir -p "$app_dir" "$data_home/applications"
-cp -a "$source_dir/bundle/." "$app_dir/"
+# Reinstalling must replace mapped executables, not truncate a running binary.
+cp -a --remove-destination "$source_dir/bundle/." "$app_dir/"
+[[ -x "$app_dir/gopher_reader_companion" ]] || { echo 'Missing native companion; extract the complete package' >&2; exit 1; }
+"$app_dir/gopher_reader_companion" --install-browser-hosts
 # Desktop Exec entries have their own quoting and percent field syntax.
 executable="$(printf '%s' "$app_dir/gopher_flutter_client" | sed 's/[\\"`$]/\\&/g; s/%/%%/g')"
 cat > "$data_home/applications/org.gopherclient.gopher_flutter_client.desktop" <<DESKTOP

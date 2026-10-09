@@ -4,6 +4,8 @@ Update on 2026-10-08: the native client fixes below have been implemented, with 
 
 Reviewed on 2026-10-07. This is a review and implementation proposal; the application and extension have not been changed or built as part of it.
 
+Update on 2026-10-09: the Linux native companion is implemented in app 1.1.0+3 and extension 1.1.0. Open in Gopher app saves explicitly selected snapshots, serves type 0 text and type 1 menus over loopback TCP, and opens the app's existing window. The installer registers the bundled native host; the app library provides removal and serving controls. See [native/README.md](native/README.md) for implementation and remaining platform limits. The roadmap below retains the original review for context.
+
 The strongest product direction is a consistent text browser: native Gopher documents and converted web pages should share the same reading controls, link presentation, bookmarks, and navigation. Keep Flutter for the installed client and add a small browser extension for one-click conversion of an already loaded web page. The extension should work independently; installing the app should unlock additional capabilities.
 
 The existing code is a small, understandable foundation. Protocol access, application state, persistence, and widgets are separate, and selectable text, bookmarks, history, and system light/dark themes already have implementations. It is currently a prototype rather than an installable, verified cross-platform release.

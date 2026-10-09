@@ -8,6 +8,8 @@ import '../widgets/text_view.dart';
 import 'bookmarks_screen.dart';
 import 'history_screen.dart';
 import 'web_landing_page.dart';
+import 'web_library_screen.dart';
+import '../services/native_companion.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,6 +33,16 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Gopher Client'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          if (NativeCompanion.supported)
+            IconButton(
+              icon: const Icon(Icons.library_books_outlined),
+              tooltip: 'Saved web pages',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const WebLibraryScreen(),
+                ),
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Reload',

@@ -4,6 +4,8 @@ project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$project_dir"
 flutter_bin="${FLUTTER_BIN:-flutter}"
 "$flutter_bin" build linux --release
+flutter_sdk="$(cd "$(dirname "$(readlink -f "$(command -v "$flutter_bin")")")/.." && pwd)"
+"$flutter_sdk/bin/dart" compile exe native/companion.dart -o build/gopher_reader_companion
 version="$(sed -n 's/^version: //p' pubspec.yaml)"
 arch="$(uname -m)"
 case "$arch" in
@@ -17,6 +19,7 @@ trap 'rm -rf "$staging"' EXIT
 package="gopher-client-$version-linux-$arch"
 mkdir -p "$staging/$package" dist
 cp -a "$bundle" "$staging/$package/bundle"
+cp build/gopher_reader_companion "$staging/$package/bundle/"
 cp LICENSE "$staging/$package/"
 cp dev-tools/install-linux.sh "$staging/$package/install.sh"
 printf '%s\n' "$version" > "$staging/$package/VERSION"

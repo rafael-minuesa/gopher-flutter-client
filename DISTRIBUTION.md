@@ -68,9 +68,9 @@ flutter build macos --release
 
 ### Linux
 ```bash
-flutter build linux --release
-# Output: build/linux/x64/release/bundle/
-# Tar the bundle folder and share
+dev-tools/package-linux.sh
+# Output: dist/gopher-client-<version>-linux-x86_64.tar.gz
+# Includes the compiled companion and user installer; install.sh registers browser integration.
 ```
 
 ---

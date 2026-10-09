@@ -36,6 +36,10 @@
     validate(doc);
     const used = new Set();
     const lines = [doc.source.title, "=".repeat(Math.min(doc.source.title.length, 72)), doc.source.url, ""];
+    if (Array.isArray(doc.notices) && doc.notices.length) {
+      for (const notice of doc.notices) if (typeof notice === "string") lines.push(`Note: ${notice}`);
+      lines.push("");
+    }
     if (mode !== "links") {
       const view = mode === "page" ? doc.page : doc.article;
       for (const block of view.blocks) {

@@ -6,6 +6,7 @@ import {execFileSync} from 'node:child_process';
 import {resolve, join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {root, fixture} from './helpers.mjs';
+import {prepareNative, verifyNative, finishNative} from './native-helper.mjs';
 
 if (!process.env.DISPLAY) throw new Error('Run this actual-toolbar test under a desktop display or xvfb-run -a.');
 const html = await fixture('article.html');
@@ -18,11 +19,13 @@ const server = createServer((req, res) => {
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const url = `http://127.0.0.1:${server.address().port}/guides/article`;
-const profile = await mkdtemp(join(tmpdir(), 'gopher-reader-chromium-'));
 let context;
+const native = await prepareNative();
+const profile = native ? join(native.env.XDG_CONFIG_HOME,'chromium') : await mkdtemp(join(tmpdir(), 'gopher-reader-chromium-'));
 try {
   context = await chromium.launchPersistentContext(profile, {
     channel:'chromium', headless:false, viewport:{width:1280,height:950},
+    ...(native ? {env:native.env} : {}),
     args:[`--disable-extensions-except=${resolve(root,'dist/chromium')}`,`--load-extension=${resolve(root,'dist/chromium')}`]
   });
   console.log('Chromium version:', context.browser().version());
@@ -52,6 +55,36 @@ try {
   const permissions = await worker.evaluate(async()=>chrome.permissions.getAll());
   assert.deepEqual(permissions.origins, [], 'No blanket host permissions');
   assert.ok(!permissions.permissions.includes('tabs'));
+  if(native) {
+    assert.equal(extensionId,'hionbnafppomnooihjbamcfbojjoakcg');
+    await reader.locator('#native-open').click();
+    await reader.waitForFunction(()=>document.getElementById('status').textContent.includes('Saved locally and opened') || !document.getElementById('error').hidden);
+    if(await reader.locator('#error').innerText()) {
+      console.log('Native diagnostic:',await worker.evaluate(async()=>{
+        try {return await chrome.runtime.sendNativeMessage('org.gopherclient.reader',{protocolVersion:1,action:'diagnostic'});}
+        catch(error) {return error.message;}
+      }));
+    }
+    assert.equal(await reader.locator('#error').innerText(),'','Native handoff must succeed');
+    await verifyNative(native,new URL(reader.url()).searchParams.get('id'));
+    // A second real action creates another document and must navigate the running app.
+    await source.bringToFront();
+    execFileSync('xdotool',['windowfocus','--sync',windowId]);
+    const secondCreated=context.waitForEvent('page');
+    execFileSync('xdotool',['key','--clearmodifiers','alt+shift+g']);
+    const second=await secondCreated;
+    await second.waitForSelector('#reading:not([hidden])');
+    await second.locator('#native-open').click();
+    await second.waitForFunction(()=>document.getElementById('status').textContent.includes('Saved locally and opened') || !document.getElementById('error').hidden);
+    assert.equal(await second.locator('#error').innerText(),'','Second native handoff must succeed');
+    await verifyNative(native,new URL(second.url()).searchParams.get('id'));
+    await second.close();
+    await reader.bringToFront();
+  } else {
+    await reader.locator('#native-open').click();
+    await reader.waitForSelector('#error:not([hidden])');
+    assert.match(await reader.locator('#error').innerText(),/Install the Linux app/);
+  }
   const dataBefore = await worker.evaluate(async()=>chrome.storage.local.get(null));
   assert.ok(!JSON.stringify(dataBefore).includes('Reading on the web'), 'Page text must not persist');
 
@@ -118,6 +151,7 @@ try {
   console.log('Chromium: actual shortcut/activeTab conversion, extraction, safe rendering, three views, find, settings, bookmarks, export, refresh, navigation boundary, cleanup, and narrow layout passed.');
 } finally {
   if (context) await context.close();
+  await finishNative(native);
   server.close();
   await rm(profile,{recursive:true,force:true});
 }

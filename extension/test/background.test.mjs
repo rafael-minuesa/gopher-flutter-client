@@ -78,3 +78,23 @@ test('settings are constrained and unknown actions return an error', async()=>{
   assert.equal(h.local.preferences.theme,'system');
   assert.equal((await h.message({type:'arbitrary'})).ok,false);
 });
+
+test('native handoff uses the stored copy and handles missing and incompatible companions', async()=>{
+  const h=harness();
+  let sent;
+  h.api.runtime.sendNativeMessage=async(host,message)=>{
+    assert.equal(host,'org.gopherclient.reader'); sent=message;
+    return {ok:true,url:'gopher://127.0.0.1:7070/1/page/'+id};
+  };
+  assert.equal((await h.message({type:'native.open',id,page:{url:'file:///untrusted'}})).ok,true);
+  assert.equal(sent.id,id);
+  assert.equal(sent.page.url,document.source.url);
+  assert.match(sent.page.article,/Secret page text/);
+  assert.equal(sent.protocolVersion,1);
+  h.api.runtime.sendNativeMessage=async()=>{throw new Error('Native host not found');};
+  assert.match((await h.message({type:'native.open',id})).error,/Install the Linux app/);
+  h.api.runtime.sendNativeMessage=async()=>({ok:true,url:'https://untrusted.example'});
+  assert.match((await h.message({type:'native.open',id})).error,/invalid page address/);
+  h.api.runtime.sendNativeMessage=async()=>({ok:false,error:'Library full'});
+  assert.equal((await h.message({type:'native.open',id})).error,'Library full');
+});
