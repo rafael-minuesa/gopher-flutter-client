@@ -6,6 +6,8 @@ Current native app version: **1.1.0+3**. See [CHANGELOG.md](CHANGELOG.md) for re
 
 **Gopher Reader extension 1.1.0** converts a loaded web page into a local text-and-links view in one click. With the Linux app installed, **Open in Gopher app** saves that copy and delivers it through actual Gopher. See [extension installation and usage](extension/README.md).
 
+Testing on another computer? Use the [quick test guide](TESTING.md) for setup, expected results and a short report checklist.
+
 ## Install and use on Linux
 
 The first validated build target is Linux x86-64. The package contains the application, Flutter runtime libraries, and assets; Flutter is not needed to run it. A graphical Linux desktop with GTK 3 is required. Builds use Flutter 3.32.7; portable compatibility across Linux distributions still needs validation.
