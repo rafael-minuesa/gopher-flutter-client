@@ -91,6 +91,6 @@ scripts/build.mjs    Browser manifests, bundled dependency, generated icons and 
 test/                Extraction and state regressions; actual Chromium/Firefox flows
 ```
 
-The native app is `1.1.0+3`; the extension has its own version, `1.1.0`, in `package.json`, and packaging derives both manifests from it. The companion's handoff protocol is independently versioned as `1`.
+The native app is `1.1.1+4`; the extension has its own version, `1.1.0`, in `package.json`, and packaging derives both manifests from it. The companion's handoff protocol is independently versioned as `1`.
 
 References: [Chrome activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab), [Firefox temporary installation](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/), [session storage](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage/session), [Mozilla Readability](https://github.com/mozilla/readability), and [Playwright extension testing](https://playwright.dev/docs/chrome-extensions).

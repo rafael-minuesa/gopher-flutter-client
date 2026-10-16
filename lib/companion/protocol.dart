@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 const hostName = 'org.gopherclient.reader';
-const chromiumId = 'hionbnafppomnooihjbamcfbojjoakcg';
+const chromiumId = 'fcpicpdmbmnfhijbaoibfdkdeainkmoa';
 const firefoxId = 'gopher-reader@rafael-minuesa.github.io';
 const companionPort = 7070;
 const maxMessageBytes = 4 * 1024 * 1024;

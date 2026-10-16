@@ -2,7 +2,7 @@
 
 The Linux package installs `gopher_reader_companion` alongside the Flutter app. It implements browser native messaging, a private Unix socket for library control, and a Gopher server bound exclusively to IPv4 loopback port 7070. The browser launches short-lived hosts; a separate daemon keeps the library available independently of those connections.
 
-The host accepts only the registered Chromium extension ID `hionbnafppomnooihjbamcfbojjoakcg` or Firefox ID `gopher-reader@rafael-minuesa.github.io`. The Chromium build includes a public manifest key so unpacked installs have a stable ID. Store publication must reconcile the store-assigned ID with host registration; there is no store release yet.
+The host accepts only the registered Chromium extension ID `fcpicpdmbmnfhijbaoibfdkdeainkmoa` or Firefox ID `gopher-reader@rafael-minuesa.github.io`. The Chromium build includes a public manifest key so unpacked installs have a stable ID. Store publication must reconcile the store-assigned ID with host registration; there is no store release yet.
 
 The versioned import message contains a reader snapshot ID, source metadata, article/full-page plain text, and numbered links. The background script builds it from its own stored copy; web/content-script messages cannot invoke the host. The daemon validates and bounds messages, IDs, URLs, text and library size before atomically saving a copy. Repeated handoffs of one reading copy update the same document and Gopher address. Creating a new reading copy creates another saved snapshot.
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1+4 — 2026-10-16
+
+- Accept the Chrome Web Store extension ID `fcpicpdmbmnfhijbaoibfdkdeainkmoa` for Open in Gopher app. The unpacked Chromium build now uses the store's public key, so store and unpacked installs share this ID. App 1.1.0+3 accepts only the previous development ID and does not connect to the store extension.
+- Release builds are no longer published automatically from tag pushes; releases ship the tested Linux package.
+
 ## 1.1.0+3 / Gopher Reader extension 1.1.0 — 2026-10-09
 
 - Add Open in Gopher app: send an explicitly selected reading copy through browser native messaging into a persistent local library.

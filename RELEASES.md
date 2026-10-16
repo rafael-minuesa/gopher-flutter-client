@@ -4,32 +4,21 @@ Current installation instructions, tested platform support, and SDK requirements
 
 This document explains how to create and publish releases for the Gopher Flutter Client.
 
-## Automatic Releases via GitHub Actions
+## Publishing a Release
 
-The repository includes a GitHub Actions workflow that automatically builds releases for all platforms.
+Releases ship the Linux package that was tested, not a fresh rebuild. Tag pushes do not trigger a build.
 
-### Creating a Release
-
-1. **Tag your commit:**
+1. Push the release commit. The "Check and package Linux" workflow uploads `gopher-client-<version>-linux-x86_64.tar.gz` and its `.sha256` as build artifacts.
+2. Test that package, for example with [TESTING.md](TESTING.md).
+3. Create a draft release on that commit with the tested files, then publish it:
    ```bash
-   git tag v1.1.0
-   git push origin v1.1.0
+   gh release create v<version> --draft --target <commit> gopher-client-<version>-linux-x86_64.tar.gz gopher-client-<version>-linux-x86_64.tar.gz.sha256
    ```
+   Publishing creates the tag.
 
-2. **GitHub Actions will automatically:**
-   - Build Android APK
-   - Build Windows executable
-   - Build macOS app
-   - Build Linux binary
-   - Create a GitHub Release with all artifacts
+### Multi-platform builds
 
-3. **Access the release:**
-   - Go to: `https://github.com/rafael-minuesa/gopher-flutter-client/releases`
-   - The latest release will contain downloadable files for all platforms
-
-### Manual Trigger
-
-You can also manually trigger the build workflow:
+The "Build Releases" workflow builds Android, Windows, macOS and Linux. It runs only when triggered manually, and creates no release. To run it:
 1. Go to Actions tab on GitHub
 2. Select "Build Releases" workflow
 3. Click "Run workflow"

@@ -56,7 +56,7 @@ try {
   assert.deepEqual(permissions.origins, [], 'No blanket host permissions');
   assert.ok(!permissions.permissions.includes('tabs'));
   if(native) {
-    assert.equal(extensionId,'hionbnafppomnooihjbamcfbojjoakcg');
+    assert.equal(extensionId,'fcpicpdmbmnfhijbaoibfdkdeainkmoa');
     await reader.locator('#native-open').click();
     await reader.waitForFunction(()=>document.getElementById('status').textContent.includes('Saved locally and opened') || !document.getElementById('error').hidden);
     if(await reader.locator('#error').innerText()) {

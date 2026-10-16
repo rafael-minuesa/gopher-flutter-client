@@ -54,9 +54,8 @@ for (const browser of ['chromium', 'firefox']) {
   for (const size of [16, 32, 48, 128]) await writeFile(join(destination, 'icons', `${size}.png`), png(size));
   const manifest = {...base, version: pkg.version};
   if (browser === 'chromium') {
-    // Public key fixes the unpacked extension ID for native host registration.
-    // The private signing key is not part of this project.
-    manifest.key = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvHPvP9aRv1s4LqYqnJ24BAQ0k69tl7AR1XmPHX3Bz5uMK81S24ALS3J+n5sSS5UBbv4sdTUTgraTBreNzlOjhH/MjIKR+o6rPw7d28Sr50Jdra5k/JqUjMJg+58uLeYw1A82IJDIo8RIqStJfXx10ZV4zCzCSYKUs5oUPchRCAQOBGPzRdJIEuJ7eV7JPSSRqgBbE4ZBDOdd45iySTBt4hRntVFlvZXre/55JR/brqtiQz/Olk3QXM6bCO0vMnfEax4TYjUCWH6ipXmQS5aIE7hTimyyX/BYPaaK1p59GsPQwfGsMSD1CY06HgERARfOteGerOSLWbcP/lUChtUBQQIDAQAB';
+    // Chrome Web Store public key: unpacked and store installs share one ID for native host registration.
+    manifest.key = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtSK1FutLIRfxd2pTeRWRbmG57jSpEu6clu4t2lGjFAMxa9AVN0oOMR3ikJFYduTeSeRY7ZLqzv1N+6+c7f9s2KKRuZl/nThcaTge9dpvsE3V5DTXjNmY8O7QF3MMt33zgaQd57Temn2aPNbuIs00OqK+Sa3xWwDz4cOj7X5xY4JOi4Z5mGWAZKDaXqlbM9GaHPoIkzP37+fqnNHq7wszgA3xcIaL5nxpt8OpDfn2Uk/vToUID8wkaaKjm8xEFykRjsPZbHAceAo/lol7icrf74DfSCyNbe3I0H5a3zScoKid3T//lJL7mxGRIBV7r0o1yEbs5IpX06dTI7vKkN6dawIDAQAB';
     manifest.minimum_chrome_version = '112';
     manifest.background = {service_worker: 'background.js'};
   } else {
