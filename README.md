@@ -12,7 +12,7 @@ Testing on another computer? Use the [quick test guide](TESTING.md) for setup, e
 
 The first validated build target is Linux x86-64. The package contains the application, Flutter runtime libraries, and assets; Flutter is not needed to run it. A graphical Linux desktop with GTK 3 is required. Builds use Flutter 3.32.7; portable compatibility across Linux distributions still needs validation.
 
-When a Linux release package is available, extract `gopher-client-<version>-linux-x86_64.tar.gz` and either run `bundle/gopher_flutter_client` directly or run:
+Download `gopher-client-<version>-linux-x86_64.tar.gz` from the [latest release](https://github.com/rafael-minuesa/gopher-flutter-client/releases/latest), extract it, and either run `bundle/gopher_flutter_client` directly or run:
 
 ```bash
 ./install.sh
@@ -26,7 +26,7 @@ Use **Saved web pages** in the app toolbar to reopen or remove copies and **Stop
 
 The companion is a compiled executable bundled with the Linux package: no Dart, Flutter, Node, or Python installation is needed to run it. Linux integration is tested with Chromium and Firefox desktop. Sandboxed Snap/Flatpak browsers may require a native messaging portal or additional host installation; Windows/macOS integration remains future work. The standalone extension continues to work without the app.
 
-There is no published release from this change yet. Developers can generate the package with the command below; the Linux CI workflow also uploads build artifacts.
+Developers can also generate the package with the command below; the Linux CI workflow also uploads build artifacts.
 
 Open the app and enter a Gopher URL or bare hostname. The starting screen includes example destinations. Text pages support selection, copying, and a working wrap toggle; menus provide directory, text, search, and web-link actions. Bookmark and history selections return you to Browse. Back, Forward, Reload, and Retry preserve the resource type and search query.
 

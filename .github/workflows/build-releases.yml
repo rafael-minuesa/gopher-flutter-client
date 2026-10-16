@@ -1,9 +1,7 @@
 name: Build Releases
 
+# Manual only: releases are published from tested packages, not from tag pushes.
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
 
 permissions:
