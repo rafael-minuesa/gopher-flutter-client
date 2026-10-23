@@ -1,10 +1,10 @@
 # Gopher Reader browser extension
 
-Version **1.1.0**. A standalone, one-click reader for Chromium browsers and Firefox desktop. It converts the page already loaded in your browser into a consistent text-and-links interface. Conversion happens locally; it does not require the Flutter app, an account, or a server. Installing the Linux app enables **Open in Gopher app** and actual local Gopher delivery.
+Version **1.1.1**. A standalone, one-click reader for Chromium browsers and Firefox desktop. It converts the page already loaded in your browser into a consistent text-and-links interface. Conversion happens locally; it does not require the Flutter app, an account, or a server. Installing the Linux app enables **Open in Gopher app** and actual local Gopher delivery.
 
 ## Install the Chromium package
 
-1. Extract `gopher-reader-1.1.0-chromium.zip` into a folder you will keep.
+1. Extract `gopher-reader-1.1.1-chromium.zip` into a folder you will keep.
 2. Open `chrome://extensions` (or `edge://extensions` in Edge).
 3. Enable **Developer mode**, choose **Load unpacked**, and select that folder.
 4. Pin **Gopher Reader** to the toolbar, open a normal web page, and click its icon.
@@ -13,7 +13,7 @@ The ZIP root contains `manifest.json`; select that root folder rather than its p
 
 ## Try the Firefox package
 
-1. Extract `gopher-reader-1.1.0-firefox.zip`.
+1. Extract `gopher-reader-1.1.1-firefox.zip`.
 2. Open `about:debugging#/runtime/this-firefox`.
 3. Choose **Load Temporary Add-on** and select the extracted `manifest.json`.
 4. Pin **Gopher Reader** to the toolbar and click it on a web page.
@@ -22,7 +22,7 @@ Requires Firefox desktop 142 or newer. Temporary installation lasts until Firefo
 
 ## Read a page
 
-Click the toolbar icon, or press **Alt+Shift+G**, to open a reading copy in a new tab. The original page remains available. Browser shortcut assignments can be changed in the browser's extension settings if another extension uses the same keys.
+Click the toolbar icon, or press **Alt+Shift+0**, to open a reading copy in a new tab. The original page remains available. Browser shortcut assignments can be changed in the browser's extension settings if another extension uses the same keys.
 
 - **Article** extracts the main writing. When no article is detected, it uses the page's readable text.
 - **Full page** keeps readable navigation, sidebars, and other page text.
@@ -91,6 +91,6 @@ scripts/build.mjs    Browser manifests, bundled dependency, generated icons and 
 test/                Extraction and state regressions; actual Chromium/Firefox flows
 ```
 
-The native app is `1.1.1+4`; the extension has its own version, `1.1.0`, in `package.json`, and packaging derives both manifests from it. The companion's handoff protocol is independently versioned as `1`.
+The native app is `1.1.1+4`; the extension has its own version, `1.1.1`, in `package.json`, and packaging derives both manifests from it. The companion's handoff protocol is independently versioned as `1`.
 
 References: [Chrome activeTab](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab), [Firefox temporary installation](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/), [session storage](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage/session), [Mozilla Readability](https://github.com/mozilla/readability), and [Playwright extension testing](https://playwright.dev/docs/chrome-extensions).

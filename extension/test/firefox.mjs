@@ -56,7 +56,7 @@ try {
   const count = requests.length;
   const windowId = execFileSync('xdotool',['search','--onlyvisible','--class','[Ff]irefox'],{encoding:'utf8'}).trim().split('\n').at(-1);
   execFileSync('xdotool',['windowfocus','--sync',windowId]);
-  execFileSync('xdotool',['key','--clearmodifiers','alt+shift+g']);
+  execFileSync('xdotool',['key','--clearmodifiers','alt+shift+0']);
   await driver.wait(async()=> (await driver.getAllWindowHandles()).length > 1,15000);
   const handles = await driver.getAllWindowHandles();
   const reading = handles.find(handle=>handle!==original);
@@ -73,7 +73,7 @@ try {
     await verifyNative(native,new URL(await driver.getCurrentUrl()).searchParams.get('id'));
     await driver.switchTo().window(original);
     execFileSync('xdotool',['windowfocus','--sync',windowId]);
-    execFileSync('xdotool',['key','--clearmodifiers','alt+shift+g']);
+    execFileSync('xdotool',['key','--clearmodifiers','alt+shift+0']);
     await driver.wait(async()=> (await driver.getAllWindowHandles()).length===3,15000);
     const second=(await driver.getAllWindowHandles()).find(handle=>handle!==original && handle!==reading);
     await driver.switchTo().window(second);

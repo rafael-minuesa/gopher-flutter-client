@@ -41,7 +41,7 @@ try {
   const windowId = execFileSync('xdotool',['search','--onlyvisible','--class','[Cc]hromium'],{encoding:'utf8'}).trim().split('\n').at(-1);
   execFileSync('xdotool',['windowfocus','--sync',windowId]);
   const created = context.waitForEvent('page');
-  execFileSync('xdotool',['key','--clearmodifiers','alt+shift+g']);
+  execFileSync('xdotool',['key','--clearmodifiers','alt+shift+0']);
   const reader = await created;
   await reader.waitForSelector('#reading:not([hidden])', {timeout:15000});
   assert.equal(await reader.locator('#title').innerText(), 'A quieter way to read');
@@ -71,7 +71,7 @@ try {
     await source.bringToFront();
     execFileSync('xdotool',['windowfocus','--sync',windowId]);
     const secondCreated=context.waitForEvent('page');
-    execFileSync('xdotool',['key','--clearmodifiers','alt+shift+g']);
+    execFileSync('xdotool',['key','--clearmodifiers','alt+shift+0']);
     const second=await secondCreated;
     await second.waitForSelector('#reading:not([hidden])');
     await second.locator('#native-open').click();
