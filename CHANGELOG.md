@@ -1,5 +1,9 @@
 # Changelog
 
+## Gopher Reader extension 1.1.1 - 2026-10-23
+
+- Change the default shortcut from Alt+Shift+G to Alt+Shift+0. In Firefox on Linux and Windows, Alt+Shift+letter also triggers page access keys, and Wikipedia and other MediaWiki sites bind G to the Wikidata link, so the old shortcut left the page instead of opening the reader. MediaWiki uses every other letter except A, which Chrome reserves; no digit is used by MediaWiki, Chrome or Firefox. Users can change it in the browser's extension shortcut settings.
+
 ## 1.1.1+4 — 2026-10-16
 
 - Accept the Chrome Web Store extension ID `fcpicpdmbmnfhijbaoibfdkdeainkmoa` for Open in Gopher app. The unpacked Chromium build now uses the store's public key, so store and unpacked installs share this ID. App 1.1.0+3 accepts only the previous development ID and does not connect to the store extension.
